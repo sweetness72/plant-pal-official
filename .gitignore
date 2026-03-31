@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+panel.html
+data/
+.certs/
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+terraform.tfvars

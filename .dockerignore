@@ -1,0 +1,39 @@
+# Python / local env
+.venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Secrets and local data (mount a volume at /app/data on the Pi)
+.env
+data/
+
+# Git / editor
+.git/
+.gitignore
+.DS_Store
+.idea/
+.vscode/
+
+# Misc from .gitignore
+.certs/
+panel.html
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+terraform.tfvars
+
+# Dev / scratch text dumps (not needed in image)
+*_bundle.txt
+all_plants_available.txt
+
+# Optional local compose files (image build does not need them)
+compose*.yaml
+compose*.yml

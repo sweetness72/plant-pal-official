@@ -1,0 +1,240 @@
+Add Plant page code bundle
+
+==================== /Users/cameronbell/Desktop/Plant Pal/app.py :: /add-plant GET ====================
+
+@app.get("/add-plant", response_class=HTMLResponse)
+def add_plant_page() -> HTMLResponse:
+    """Add Plant form: preset dropdown + custom fields."""
+    init_db()
+    ensure_seeded()
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2d6b4a">
+    <link rel="manifest" href="/manifest.json">
+    <title>Add Plant · Plant Pal</title>
+    <style>
+        {_COMMON_CSS}
+        .form {{ max-width: 480px; margin: 0 auto; background: rgba(255,255,255,0.72); border-radius: 3rem; box-shadow: var(--shadow-ambient); padding: 1.75rem; border: var(--ghost-border); backdrop-filter: blur(12px); }}
+        .brand-small {{ color: #2d6b4a; }}
+        h1 {{ font-size: 0.95rem; font-weight: 700; color: #4a5c3a; margin: 0 0 1rem 0; }}
+        label {{ display: block; margin-bottom: 0.25rem; color: #5a554d; font-size: 0.85rem; }}
+        input, select {{ width: 100%; padding: 0.7rem 0.85rem; margin-bottom: 1rem; background: var(--surface-container-low); border: none; color: #4a4540; font-family: inherit; border-radius: 1.5rem; }}
+        button {{ padding: 0.55rem 1.1rem; background: #3d7c5c; color: #faf8f5; border: none; font-family: inherit; cursor: pointer; border-radius: 16px; font-weight: 600; }}
+        button:hover {{ background: #4a8b5e; }}
+        .back {{ margin-bottom: 1rem; font-size: 0.9rem; }}
+        #search-results {{ margin-top: -0.35rem; margin-bottom: 0.9rem; border: none; border-radius: 1rem; background: rgba(255,255,255,0.72); max-height: 200px; overflow-y: auto; }}
+        #search-results:empty {{ display: none; }}
+        .search-hit {{ padding: 0.65rem 0.8rem; min-height: 44px; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; margin: 0.35rem; border-radius: 1rem; background: var(--surface-container-low); }}
+        .search-hit:hover, .search-hit:active {{ background: #f5f3ef; }}
+        .search-hit:last-child {{ margin-bottom: 0.35rem; }}
+        .selected-plant {{ font-size: 0.85rem; color: #3d7c5c; margin-bottom: 0.5rem; }}
+        .search-filter-wrap {{ font-size: 0.8rem; margin-bottom: 0.5rem; color: #5a554d; }}
+        .search-filter-label {{ margin-right: 0.35rem; }}
+        .filter-btn {{ font-family: inherit; font-size: 0.72rem; padding: 0.38rem 0.7rem; margin-right: 0.25rem; background: var(--surface-container-low); border: none; border-radius: 999px; cursor: pointer; color: #5a554d; text-transform: uppercase; letter-spacing: 0.05em; }}
+        .filter-btn:hover {{ background: #e8e0d5; }}
+        .filter-btn.active {{ background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%); color: #faf8f5; }}
+        .search-hit {{ display: flex; align-items: center; gap: 0.5rem; }}
+        .search-hit-icon {{ flex-shrink: 0; display: flex; align-items: center; justify-content: center; }}
+        .search-hit-icon svg {{ width: 22px; height: 22px; }}
+        #selected-plant {{ display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }}
+        .selected-plant-icon {{ display: inline-flex; align-items: center; }}
+        .selected-plant-icon svg {{ width: 22px; height: 22px; }}
+        .search-loading {{ font-size: 0.85rem; color: #8a8580; margin: 0.5rem 0; }}
+        .search-empty {{ font-size: 0.85rem; color: #8a8580; margin: 0.5rem 0; }}
+        .add-plant-tip {{ font-size: 0.82rem; color: #6f6a63; margin: 0 0 1.25rem 0; padding: 0.75rem 0.95rem; background: var(--surface-container); border-radius: 1.25rem; border: none; }}
+        .form input[type="text"], .form input[type="number"], .form select {{ min-height: 44px; font-size: 16px; }}
+        {_LOFI_SCENE_CSS}
+        {_COZY_BG_CSS}
+    </style>
+</head>
+<body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    {_cozy_bg_html("add")}
+    <div class="cozy-content">
+    {_ANIMATED_SCENE}
+    <div class="form" id="main">
+        <p class="back"><a href="/">← Home</a> · <a href="/library">Plant Library</a> · <a href="/plants">My Plants</a></p>
+        <p class="brand brand-small" aria-hidden="true">Plant Pal</p>
+        <h1>Add plant</h1>
+        <p class="add-plant-tip">Works on touch screens—use a phone, tablet, or Kindle. Same cozy view; tap to type when you need to.</p>
+        <form method="post" action="/add-plant">
+            <label>Plant type (optional)</label>
+            <p class="search-filter-wrap"><span class="search-filter-label">Show:</span> <button type="button" class="filter-btn active" data-env="">All</button> <button type="button" class="filter-btn" data-env="indoor">Indoor</button> <button type="button" class="filter-btn" data-env="outdoor">Outdoor</button></p>
+            <input type="text" id="plant-search" placeholder="Search for a plant..." autocomplete="off" />
+            <input type="hidden" name="template_id" id="template_id" value="" />
+            <div class="selected-plant" id="selected-plant" style="display:none;"></div>
+            <div id="search-results"></div>
+            <label>Display name</label>
+            <input type="text" name="display_name" required placeholder="e.g. Living Room Fig" />
+            <label>Room</label>
+            <input type="text" name="room_name" required placeholder="e.g. Living Room" />
+            <label>Pot size (inches)</label>
+            <input type="number" name="pot_diameter_inches" value="8" min="1" max="24" />
+            <label>Pot material</label>
+            <select name="pot_material">
+                <option value="plastic">Plastic</option>
+                <option value="ceramic">Ceramic</option>
+                <option value="terracotta">Terracotta</option>
+            </select>
+            <label>Light</label>
+            <select name="light_level">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="bright">Bright</option>
+            </select>
+            <button type="submit">Add plant</button>
+        </form>
+    </div>
+    </div>
+    <script>{_COZY_CLOCK_JS}</script>
+    <script>
+    (function() {{
+        var searchEl = document.getElementById('plant-search');
+        var templateIdEl = document.getElementById('template_id');
+        var resultsEl = document.getElementById('search-results');
+        var selectedEl = document.getElementById('selected-plant');
+        var debounce = null;
+        searchEl.addEventListener('input', function() {{
+            var q = searchEl.value.trim();
+            if (debounce) clearTimeout(debounce);
+            if (!q) {{ resultsEl.innerHTML = ''; return; }}
+            resultsEl.innerHTML = '<p class="search-loading">Searching…</p>';
+            debounce = setTimeout(function() {{
+                var envEl = document.querySelector('.filter-btn.active');
+                var env = envEl && envEl.getAttribute('data-env') ? '&environment=' + encodeURIComponent(envEl.getAttribute('data-env')) : '';
+                fetch('/api/templates/search?q=' + encodeURIComponent(q) + env)
+                    .then(function(r) {{ return r.json(); }})
+                    .then(function(list) {{
+                        resultsEl.innerHTML = '';
+                        if (list.length === 0) {{ resultsEl.innerHTML = '<p class="search-empty">No plants match. Try another name or filter.</p>'; return; }}
+                        list.forEach(function(t) {{
+                            var div = document.createElement('div');
+                            div.className = 'search-hit';
+                            div.innerHTML = '<span class="search-hit-icon">' + (t.icon_svg || '') + '</span><span class="search-hit-name">' + (t.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>';
+                            div.addEventListener('click', function() {{
+                                templateIdEl.value = t.id;
+                                selectedEl.innerHTML = '';
+                                selectedEl.innerHTML = '<span class="selected-plant-icon">' + (t.icon_svg || '') + '</span> <span class="selected-plant-name">Selected: ' + (t.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span> ';
+                                var clearBtn = document.createElement('a');
+                                clearBtn.href = '#';
+                                clearBtn.textContent = 'Clear';
+                                clearBtn.onclick = function(e) {{ e.preventDefault(); templateIdEl.value = ''; selectedEl.innerHTML = ''; selectedEl.style.display = 'none'; }};
+                                selectedEl.appendChild(clearBtn);
+                                selectedEl.style.display = 'block';
+                                resultsEl.innerHTML = '';
+                                searchEl.value = '';
+                            }});
+                            resultsEl.appendChild(div);
+                        }});
+                    }});
+            }}, 200);
+        }});
+        searchEl.addEventListener('focus', function() {{
+            if (searchEl.value.trim()) searchEl.dispatchEvent(new Event('input'));
+        }});
+        document.querySelectorAll('.filter-btn').forEach(function(btn) {{
+            btn.addEventListener('click', function() {{
+                document.querySelectorAll('.filter-btn').forEach(function(b) {{ b.classList.remove('active'); }});
+                btn.classList.add('active');
+                if (searchEl.value.trim()) searchEl.dispatchEvent(new Event('input'));
+            }});
+        }});
+    }})();
+    </script>
+</body>
+</html>"""
+    return HTMLResponse(html)
+
+
+
+
+==================== /Users/cameronbell/Desktop/Plant Pal/app.py :: /add-plant POST ====================
+
+@app.post("/add-plant")
+def add_plant_submit(
+    display_name: str = Form(""),
+    room_name: str = Form(""),
+    pot_diameter_inches: int = Form(8),
+    pot_material: str = Form("plastic"),
+    light_level: str = Form("medium"),
+    template_id: str = Form(""),
+    next: str = Form("/plants"),
+):
+    """Form POST: add plant and redirect. Use next=/ to return to home, or /plants for My Plants."""
+    from urllib.parse import quote
+    init_db()
+    name = display_name or "Unnamed"
+    add_plant(
+        display_name=name,
+        room_name=room_name or "Unknown",
+        pot_diameter_inches=pot_diameter_inches,
+        pot_material=pot_material,
+        light_level=light_level,
+        template_id=template_id or None,
+    )
+    next_val = (next or "").strip().lower()
+    if next_val in ("", "/", "home"):
+        url = "/?added=1&name=" + quote(name)
+    else:
+        url = "/plants?added=1&name=" + quote(name)
+    return RedirectResponse(url=url, status_code=303)
+
+
+
+
+==================== /Users/cameronbell/Desktop/Plant Pal/app.py :: /api/templates/search ====================
+
+@app.get("/api/templates/search")
+def api_search_templates(q: Optional[str] = None, environment: Optional[str] = None):
+    """
+    Search templates by name. Uses parameterized queries only (no SQL injection).
+    Optional ?environment=indoor|outdoor to filter.
+    """
+    init_db()
+    ensure_seeded()
+    env = environment if environment in ("indoor", "outdoor") else None
+    templates = search_templates(q or "", limit=25, environment=env)
+    return [
+        {
+            "id": str(t.id),
+            "name": t.name,
+            "slug": t.slug,
+            "icon_id": getattr(t, "icon_id", None) or t.slug,
+            "icon_svg": get_icon_svg(getattr(t, "icon_id", None) or t.slug),
+            "watering_frequency_display": t.watering_frequency_display,
+            "light_display": t.light_display,
+            "description": t.description,
+            "environment": getattr(t, "environment", "indoor"),
+        }
+        for t in templates
+    ]
+
+
+@app.get("/api/plants")
+def api_list_plants():
+    """List all plants (for current user)."""
+    init_db()
+    plants = get_plants()
+    today = date.today()
+    return [
+        {
+            "id": str(p.id),
+            "display_name": p.display_name,
+            "room_name": p.room_name,
+            "pot_diameter_inches": p.pot_diameter_inches,
+            "pot_material": p.pot_material,
+            "light_level": p.light_level,
+            "last_watered_date": p.last_watered_date.isoformat() if p.last_watered_date else None,
+            "drying_coefficient": p.drying_coefficient,
+            "current_streak": p.current_streak,
+            "longest_streak": p.longest_streak,
+            "badges_earned": p.badges_earned,
+            "due_date": (d.isoformat() if (d := predicted_dry_date(p, today)) else None),
+        }
+        for p in plants
+    ]
+
+

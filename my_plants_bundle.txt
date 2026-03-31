@@ -1,0 +1,249 @@
+My Plants page code bundle
+
+==================== /Users/cameronbell/Desktop/Plant Pal/app.py :: /plants route ====================
+
+@app.get("/plants", response_class=HTMLResponse)
+def my_plants_page(sort: Optional[str] = None, added: Optional[str] = None, name: Optional[str] = None) -> HTMLResponse:
+    """My Plants: list all plants with due date, streak, badges, remove. Sort: due (default), room, name."""
+    init_db()
+    ensure_seeded()
+    plants = get_plants()
+    today = date.today()
+
+    def _esc(value: str) -> str:
+        return (
+            (value or "")
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace('"', "&quot;")
+        )
+
+    if sort == "room":
+        plants = sorted(plants, key=lambda p: (p.room_name.lower(), p.display_name.lower()))
+    elif sort == "name":
+        plants = sorted(plants, key=lambda p: p.display_name.lower())
+    else:
+        def due_sort_key(p):
+            due = predicted_dry_date(p, today)
+            return (due or date.max, p.display_name.lower())
+        plants = sorted(plants, key=due_sort_key)
+
+    added_name = (name or "").strip() if added else None
+    cards = []
+    for p in plants:
+        due = predicted_dry_date(p, today)
+        if due is None:
+            due_text = "No schedule"
+            due_class = "text-outline"
+        elif due < today:
+            due_text = "Overdue"
+            due_class = "text-error"
+        elif due == today:
+            due_text = "Due today"
+            due_class = "text-primary"
+        else:
+            days = (due - today).days
+            due_text = f"Due in {days} day" + ("s" if days != 1 else "")
+            due_class = "text-primary"
+
+        env = getattr(p.template, "environment", "indoor") if p.template else "indoor"
+        env_badge = "Indoor" if env == "indoor" else "Outdoor"
+        icon_svg = get_icon_svg(p.get_icon_id())
+        display_name = _esc(p.display_name)
+        room_name = _esc(p.room_name)
+        best = p.longest_streak
+        streak = p.current_streak
+        badges = sorted(p.badges_earned)[:3]
+        badge_icons = []
+        for b in badges:
+            title = _esc(b.replace("_", " ").title())
+            badge_icons.append(
+                f'<div class="w-8 h-8 rounded-full bg-tertiary-container flex items-center justify-center" title="{title}"><span class="material-symbols-outlined text-sm text-on-tertiary-container">eco</span></div>'
+            )
+        badge_html = "".join(badge_icons) or '<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center" title="Getting Started"><span class="material-symbols-outlined text-sm text-on-secondary-container">sprout</span></div>'
+
+        cards.append(
+            f"""
+<div class="group relative flex flex-col md:flex-row gap-6 p-1 bg-transparent hover:translate-y-[-4px] transition-transform duration-500">
+  <div class="w-24 h-24 rounded-full bg-primary-container flex items-center justify-center shrink-0 shadow-lg overflow-hidden">{icon_svg}</div>
+  <div class="flex-grow flex flex-col justify-center min-w-0">
+    <div class="flex items-start justify-between">
+      <div>
+        <div class="flex items-center gap-3 mb-1">
+          <h3 class="font-headline text-2xl text-on-surface">{display_name}</h3>
+          <span class="px-3 py-0.5 rounded-full bg-surface-container text-[10px] font-bold uppercase tracking-wider text-tertiary">{env_badge}</span>
+        </div>
+        <div class="flex items-center gap-1 text-on-surface-variant text-sm">
+          <span class="material-symbols-outlined text-xs">location_on</span>
+          <span>{room_name}</span>
+        </div>
+      </div>
+      <form method="post" action="/plants/{p.id}/remove" onsubmit="return confirm('Remove this plant?');">
+        <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-2 text-error hover:bg-error-container/10 rounded-full" aria-label="Remove plant" type="submit">
+          <span class="material-symbols-outlined">delete_outline</span>
+        </button>
+      </form>
+    </div>
+    <div class="mt-4 flex flex-wrap items-center gap-6">
+      <div class="flex flex-col">
+        <span class="text-[10px] font-bold uppercase text-outline">Watering</span>
+        <span class="text-sm font-semibold {due_class}">{due_text}</span>
+      </div>
+      <div class="flex flex-col border-l border-outline-variant/30 pl-6">
+        <span class="text-[10px] font-bold uppercase text-outline">Streak</span>
+        <div class="flex items-center gap-1">
+          <span class="text-sm font-semibold text-secondary">{streak} days</span>
+          <span class="text-[10px] text-on-surface-variant">(Best: {best})</span>
+        </div>
+      </div>
+      <div class="flex gap-2">{badge_html}</div>
+    </div>
+  </div>
+</div>"""
+        )
+
+    content = "\n".join(cards) if cards else """
+<div class="mt-16 p-8 rounded-2xl bg-surface-container-low/50 border border-outline-variant/10 text-center">
+  <p class="font-headline text-xl text-tertiary mb-4">Adding a new companion?</p>
+  <a href="/add-plant" class="inline-block px-8 py-3 bg-primary text-on-primary rounded-full font-bold text-sm shadow-xl hover:bg-primary-dim transition-all active:scale-95 duration-300">+ Add Plant</a>
+</div>"""
+
+    added_msg = f'<div class="mb-8 p-4 rounded-2xl bg-primary-container/70 text-on-primary-container text-sm font-semibold">Added {_esc(name or "")}. It is on your list.</div>' if added_name else ""
+    sort_value = sort or "due"
+    plants_count = len(plants)
+
+    html = f"""<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Plant Pal - My Plants</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Plus+Jakarta+Sans:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+tailwind.config = {{
+  darkMode: "class",
+  theme: {{
+    extend: {{
+      colors: {{
+        "error-container": "#fd795a", "primary-fixed-dim": "#c4dbb7", "tertiary-fixed-dim": "#e7ebc7",
+        "inverse-on-surface": "#a09e87", "secondary": "#845c32", "on-tertiary-container": "#5b6044",
+        "primary": "#566a4d", "on-secondary-fixed": "#5a3811", "tertiary": "#62674a", "error-dim": "#791903",
+        "on-error": "#ffffff", "outline": "#84825c", "on-tertiary-fixed-variant": "#666a4e",
+        "surface-container-lowest": "#ffffff", "surface-container": "#f9f5d0", "on-tertiary": "#ffffff",
+        "on-surface-variant": "#686642", "tertiary-fixed": "#f6fad5", "surface-container-low": "#fffbda",
+        "surface-variant": "#eeeabd", "secondary-container": "#ffdcbd", "inverse-surface": "#0f0f03",
+        "on-secondary-container": "#6f4a22", "secondary-fixed-dim": "#ffca98", "background": "#fffbff",
+        "on-primary-fixed-variant": "#4d6144", "surface-dim": "#e8e4b8", "on-surface": "#3a391a",
+        "secondary-dim": "#765028", "on-secondary": "#ffffff", "tertiary-dim": "#565b3f",
+        "on-primary-container": "#43573b", "surface": "#fffbff", "error": "#ae4025", "primary-container": "#d2eac5",
+        "on-secondary-fixed-variant": "#7a532a", "on-primary-fixed": "#31442a", "surface-container-high": "#f3efc8",
+        "primary-fixed": "#d2eac5", "on-tertiary-fixed": "#494e33", "on-primary": "#ffffff", "outline-variant": "#bebb91",
+        "surface-container-highest": "#eeeabd", "surface-bright": "#fffbff", "on-background": "#3a391a",
+        "tertiary-container": "#f6fad5", "secondary-fixed": "#ffdcbd", "on-error-container": "#6e1400",
+        "inverse-primary": "#e6fed8", "primary-dim": "#4a5e41", "surface-tint": "#566a4d"
+      }},
+      fontFamily: {{
+        "headline": ["Newsreader"],
+        "body": ["Plus Jakarta Sans"],
+        "label": ["Plus Jakarta Sans"]
+      }},
+    }},
+  }},
+}};
+</script>
+<style>
+.material-symbols-outlined {{ font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24; }}
+.glass-panel {{ background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); }}
+body {{ background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuDdx7uhrjAiU82H-oQ9Cxw9mea-cJBSC1gBIqXHj0NzInjjtfGhtQ8ScZ_eFA42MHcfhkiylB7-dXdmcQL673M4c_TkDBS_GwLlMutu4OrSW_lFT3BSXJ4ARclMYKGdHSeiwesfQ0OIsgW1jJiLjgw6vZkRUvf-lcV-PmipOqfFF3E2dDyFdrnLR6z_fw2Hi21q5xjH2YNeAQ9YG1OX89PXE3-Hv5ydASpmpephUjUpkBhp4QXyK-fM2kD-ofFYTZ4prauvXPF8fU4); background-size: cover; background-position: center; background-attachment: fixed; min-height: max(884px, 100dvh); }}
+</style>
+</head>
+<body class="font-body text-on-surface min-h-screen">
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-white/80 backdrop-blur-xl shadow-[0_40px_60px_-5px_rgba(58,57,26,0.05)]">
+  <div class="flex items-center gap-3">
+    <span class="material-symbols-outlined text-[#566a4d]">menu</span>
+    <h1 class="text-2xl italic text-[#566a4d]">Plant Pal</h1>
+  </div>
+  <div class="flex items-center gap-2 text-[#686642]">
+    <span class="text-sm font-medium" id="plants-clock">--:--</span>
+    <span class="material-symbols-outlined text-[#566a4d]">schedule</span>
+  </div>
+</header>
+<main class="pt-24 pb-32 px-4 md:px-8 max-w-4xl mx-auto">
+  <div class="fixed top-40 right-[5%] opacity-20 pointer-events-none select-none hidden lg:block">
+    <span class="material-symbols-outlined text-[12rem] text-primary" style="font-variation-settings: 'wght' 100;">cannabis</span>
+  </div>
+  <div class="glass-panel rounded-3xl p-6 md:p-10 shadow-2xl relative overflow-hidden" id="main">
+    <div class="flex items-center justify-between mb-5">
+      <p class="text-sm"><a href="/" class="underline">Home</a> · <a href="/library" class="underline">Library</a> · <a href="/add-plant" class="underline">+ Add plant</a></p>
+    </div>
+    {added_msg}
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+      <div>
+        <h2 class="font-headline text-5xl text-primary mb-2">My Plants</h2>
+        <p class="text-on-surface-variant font-medium">Caring for {plants_count} botanical friends</p>
+      </div>
+      <form class="relative group" method="get" action="/plants">
+        {f'<input type="hidden" name="added" value="1"/><input type="hidden" name="name" value="{_esc(name or "")}"/>' if added_name else ''}
+        <label class="block text-xs font-bold uppercase tracking-widest text-outline mb-2 ml-1">Sort By</label>
+        <div class="flex items-center gap-3 bg-surface-container-highest px-5 py-3 rounded-full">
+          <select name="sort" onchange="this.form.submit()" class="bg-transparent border-none p-0 text-sm font-semibold text-on-surface focus:ring-0">
+            <option value="due" {"selected" if sort_value == "due" else ""}>Due soon</option>
+            <option value="room" {"selected" if sort_value == "room" else ""}>Room</option>
+            <option value="name" {"selected" if sort_value == "name" else ""}>Name</option>
+          </select>
+          <span class="material-symbols-outlined text-sm">expand_more</span>
+        </div>
+      </form>
+    </div>
+    <div class="grid grid-cols-1 gap-8">{content}</div>
+  </div>
+</main>
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-white/80 backdrop-blur-xl rounded-t-3xl shadow-[0_-10px_40px_rgba(58,57,26,0.03)] border-t border-[#bebb91]/15">
+  <a class="flex flex-col items-center justify-center text-[#686642] px-5 py-1 hover:opacity-80 transition-opacity duration-300" href="/library">
+    <span class="material-symbols-outlined mb-1">local_library</span>
+    <span class="text-xs font-medium">Library</span>
+  </a>
+  <a class="flex flex-col items-center justify-center bg-[#d2eac5] text-[#566a4d] rounded-full px-5 py-1 transition-all duration-500 ease-in-out active:scale-90" href="/plants">
+    <span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">potted_plant</span>
+    <span class="text-xs font-medium">My Plants</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-[#686642] px-5 py-1 hover:opacity-80 transition-opacity duration-300" href="/add-plant">
+    <span class="material-symbols-outlined mb-1">add_circle</span>
+    <span class="text-xs font-medium">Add Plant</span>
+  </a>
+</nav>
+<script>
+  (function() {{
+    var el = document.getElementById('plants-clock');
+    if (!el) return;
+    function tick() {{
+      var now = new Date();
+      var h = now.getHours(), m = now.getMinutes();
+      var h12 = h % 12 || 12;
+      el.textContent = h12 + ':' + (m < 10 ? '0' : '') + m + (h < 12 ? ' AM' : ' PM');
+    }}
+    tick();
+    setInterval(tick, 60000);
+  }})();
+</script>
+</body>
+</html>"""
+    return HTMLResponse(html)
+
+
+
+
+==================== /Users/cameronbell/Desktop/Plant Pal/app.py :: remove route ====================
+
+@app.post("/plants/{plant_id}/remove")
+def remove_plant_post(plant_id: str):
+    """Remove a plant and redirect to My Plants."""
+    remove_plant(plant_id)
+    return RedirectResponse(url="/plants", status_code=303)
+
+
