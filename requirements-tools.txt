@@ -1,0 +1,9 @@
+# Bootstrap tooling — installed into the venv by `make install`.
+#
+# Deliberately NOT hash-pinned. These tools are only used by developers to
+# generate and audit the real locks; they never ship in the Docker image.
+# Keeping them outside the lock avoids a chicken-and-egg problem where you'd
+# need pip-tools to install pip-tools.
+
+pip-tools>=7.4
+pip-audit>=2.7

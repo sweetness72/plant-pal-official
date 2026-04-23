@@ -1,0 +1,34 @@
+# Runtime dependencies — human-edited source of truth.
+#
+# Loose version constraints only. The fully-pinned, hash-verified install
+# list lives in requirements.lock and is regenerated with `make lock`.
+# Everything (venv, Docker, CI) installs from the .lock, not from here.
+#
+# Update flow:
+#   1. edit this file
+#   2. `make lock`   -> regenerates requirements.lock + requirements-dev.lock
+#   3. `make sync`   -> brings your venv in line with the lock
+#   4. `make audit`  -> pip-audit against the new lock
+#
+# Pinning rationale documented inline so future-you remembers why.
+
+fastapi>=0.100.0
+
+# uvicorn 0.45.0 shipped a broken wheel (missing uvicorn.protocols.http /
+# websockets subpackages). Ceiling stays until a clean 0.45.x release is
+# verified.
+uvicorn[standard]>=0.30,<0.45
+
+# Starlette 1.0 dropped the keep_trailing_newline kwarg from Jinja2Templates.
+# We hand-build the Environment in app/main.py so we're forwards-compatible,
+# but pinning a floor keeps resolution deterministic.
+starlette>=0.46
+
+pydantic>=2.0.0
+python-multipart>=0.0.6
+jinja2>=3.1.0
+
+# Pillow — resize + re-encode user plant photos before saving. Stored
+# under data/uploads/. No hard ceiling; pip-audit + `make upgrade`
+# surface CVEs promptly and Pillow maintains a clean SemVer record.
+pillow>=10.0.0

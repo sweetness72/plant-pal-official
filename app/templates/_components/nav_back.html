@@ -1,0 +1,22 @@
+{#
+  Back-style navigation for flow pages (Add Plant; Plant Detail later).
+
+  Usage:
+      {% with back_href="/plants", back_title="Add plant" %}
+        {% include "_components/nav_back.html" %}
+      {% endwith %}
+
+  Context:
+      back_href  -- URL for the back link (default "/")
+      back_title -- short page title shown beside the arrow (optional)
+#}
+<header class="pp-nav-back" role="banner">
+  <a class="pp-nav-back__link"
+     href="{{ back_href|default('/') }}"
+     aria-label="Back">
+    <span class="material-symbols-outlined">arrow_back</span>
+  </a>
+  {% if back_title %}
+    <span class="pp-nav-back__title">{{ back_title }}</span>
+  {% endif %}
+</header>

@@ -37,3 +37,17 @@ all_plants_available.txt
 # Optional local compose files (image build does not need them)
 compose*.yaml
 compose*.yml
+
+# Dependency-management sources: only the lock is needed at build time.
+# The Dockerfile does `COPY requirements.lock` explicitly, but leaving the
+# .in / dev.lock / tools files out keeps the build context small and avoids
+# accidentally shipping dev-only tooling.
+requirements.in
+requirements-dev.in
+requirements-dev.lock
+requirements-tools.txt
+
+# Docs and maintenance notes — useful for humans, not for the runtime.
+MAINTENANCE.md
+TESTING.md
+ASSUMPTIONS.md

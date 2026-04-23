@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}My plants — Plant Pal{% endblock %}
+
+{% block content %}
+{% include "_components/nav.html" %}
+
+<main id="main" class="pp-page" style="max-width: 68rem; margin: 0 auto; padding: 1.5rem 1rem 4rem;">
+  <nav aria-label="Breadcrumb" style="margin-bottom: 0.75rem;">
+    <a class="pp-chip pp-chip--ghost" href="/">← Today</a>
+  </nav>
+
+  <header class="pp-page-header" style="margin-bottom: 1.25rem;">
+    <div>
+      <h1 class="pp-page-header__title">My plants</h1>
+      <p class="pp-page-header__subtitle">{{ plants_total }} in your home</p>
+    </div>
+  </header>
+
+  {% if added_name %}
+  <div class="pp-callout" style="margin-bottom: 1.25rem;">Added {{ added_name }}. It is on your list.</div>
+  {% endif %}
+
+  <section id="all-plants" class="w-full scroll-mt-24" aria-label="All plants">
+    {% if all_plants %}
+    <ul class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 list-none p-0">
+      {% for p in all_plants %}
+      <li>
+        <a class="pp-card pp-card--link" href="/plants/{{ p.id }}">
+          <div class="pp-card__media">{{ p.thumb_html|safe }}</div>
+            <div class="pp-card__body">
+            <div class="pp-card__eyebrow">{% if p.place_cue %}{{ p.place_cue }}{% else %}{{ p.room_name }}{% endif %}</div>
+            <div class="pp-card__title">{{ p.display_name }}</div>
+            <div class="pp-card__type">{{ p.archetype_cue }}</div>
+            <div class="pp-card__meta">
+              <span class="pp-chip pp-chip--status-{{ p.due_tone }}">{{ p.due_short }}</span>
+              <span class="pp-card__streak">{{ p.streak }}d streak</span>
+            </div>
+          </div>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="pp-empty">
+      <p class="pp-empty__title">Your garden awaits</p>
+      <p class="pp-empty__body">Add your first plant to start tracking water and light.</p>
+      <a class="pp-btn" href="/add-plant">+ Add plant</a>
+    </div>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}

@@ -1,0 +1,34 @@
+# Plant Pal — production-style Compose
+#
+# Build a versioned image (do not rely on :latest for production):
+#   docker compose build
+#
+# The image is tagged as plant-pal:1.0.0 (see "image" below). Bump the tag
+# in this file when you cut a new release, then rebuild.
+#
+# Data: named volume → /app/data in the container (SQLite + uploads). See
+# core/db/connection.py and app/main.py (UPLOADS_DIR).
+#
+# First run: empty volume → fresh DB on startup.
+# Replace volume / restore only when you intend to copy production data.
+#
+# Health: HEALTHCHECK is defined in the Dockerfile only (no duplicate here) so
+# one definition applies to `docker run` and `docker compose up` alike.
+
+services:
+  plant-pal:
+    image: plant-pal:1.0.0
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      PLANTPAL_HOST: "0.0.0.0"
+      PLANTPAL_PORT: "8000"
+      # Optional: set on the Pi (comma-separated; see app/security.py)
+      # PLANTPAL_ALLOWED_HOSTS: "plantpal.local,127.0.0.1"
+    volumes:
+      - plantpal_data:/app/data
+
+volumes:
+  plantpal_data:

@@ -1,11 +1,11 @@
 """Shared example plants for demo / development."""
+
 from datetime import date, timedelta
-from typing import List, Optional
 
 from .schema import CareTemplate, LightLevel, MoisturePreference, Plant, PotMaterial
 
 
-def get_example_plants(today: Optional[date] = None) -> List[Plant]:
+def get_example_plants(today: date | None = None) -> list[Plant]:
     today = today or date.today()
 
     fig_template = CareTemplate(

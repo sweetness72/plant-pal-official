@@ -1,0 +1,9 @@
+{
+    "name": "Plant Pal",
+    "short_name": "Plant Pal",
+    "description": "Track watering and care for your plants",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f0ebe3",
+    "theme_color": "#7d8b6f"
+}

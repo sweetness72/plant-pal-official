@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block html_attr %} class="light"{% endblock %}
+{% block title %}Plant Library — Plant Pal{% endblock %}
+
+{% block head %}
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="/static/js/tw-config.js"></script>
+<style>
+.glass-panel { background: rgba(255, 251, 255, 0.65); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px) }
+.material-symbols-outlined { font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24 }
+.bg-lofi-kitchen { background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuCLxyI9Lz4F2MPW8GDCCPTFgsdrlj0q_2cMPz0z5Fg6ZoTQd92VTMThpCbHLrIo47nb5DHY-hSFuK_ByRHGKWjJA6EamIDLNTjuq5F9CGiQhYSSIUIIBCCxLkLDsWfMUij568DkWiIgOW196n2RjvMS-VJh2urlor39qrOJndiPKFZIINyV_3RepRMp2H_F3SMu8ml9jUYTB88e7N6xQkbmyJ_tgNVdGGAhBRd7vdxNIjkr6RbS5dmaqJvc4fcRBT43HMfjwVEmQP8); background-size: cover; background-position: center }
+.lib-category { font-family: "Newsreader", serif; font-size: 2rem; color: #566a4d; margin: 1.2rem 0 1rem; }
+.lib-category-block { margin-bottom: 1.2rem; }
+.lib-row { background: rgba(255,255,255,0.55); border: 1px solid rgba(255,255,255,0.2); border-radius: 1.6rem; padding: 1rem; display: flex; gap: 1rem; align-items: center; transition: all .5s; }
+.lib-row:hover { background: rgba(255,255,255,0.75); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(58,57,26,0.08); }
+.lib-info { flex: 1 1 auto; min-width: 0; }
+.lib-add-btn { flex: 0 0 auto; margin-left: auto; white-space: nowrap; }
+@media (max-width: 640px) { .lib-row { flex-wrap: wrap; } .lib-add-btn { width: 100%; } }
+.lib-icon { width: 4rem; height: 4rem; border-radius: 1rem; overflow: hidden; background: #f9f5d0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.lib-icon svg { width: 2rem; height: 2rem; }
+.lib-thumb-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lib-name { font-weight: 700; font-size: 1.25rem; color: #3a391a; }
+.lib-badge { padding: 0.15rem 0.55rem; border-radius: 999px; font-size: .64rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin-left: .45rem; }
+.lib-badge-indoor { background: #f9f5d0; color: #62674a; }
+.lib-badge-outdoor { background: #d2eac5; color: #43573b; }
+.lib-meta { display:block; margin-top:.2rem; font-size:.78rem; color:#686642; }
+.lib-desc { margin-top:.45rem; font-size:.9rem; color:#3a391a; line-height:1.4; }
+.lib-growing { margin-top:.6rem; padding:.7rem .8rem; border-radius:.9rem; background:#f6fad5; color:#5b6044; font-size:.82rem; }
+.lib-row-hidden { display:none !important; }
+</style>
+{% endblock %}
+
+{% block body_attr %} class="!p-0 m-0 bg-stone-100 font-body text-on-surface min-h-screen relative overflow-x-hidden"{% endblock %}
+
+{% block content %}
+<div class="fixed inset-0 z-0 bg-lofi-kitchen"><div class="absolute inset-0 bg-white/10 backdrop-contrast-75"></div></div>
+{% include "_components/nav.html" %}
+<main class="relative z-10 pt-28 pb-32 px-6 md:px-12 lg:px-24 min-h-screen flex items-start justify-center">
+  <div class="glass-panel w-full max-w-6xl rounded-[2.5rem] shadow-2xl p-8 md:p-12 border border-white/30" id="main">
+    <div class="mb-12 space-y-6">
+      <h1 class="font-headline italic text-5xl md:text-6xl text-on-surface tracking-tight">Plant Library</h1>
+      <p class="font-body text-lg text-on-surface-variant max-w-2xl leading-relaxed">Explore our curated collection of botanical wonders. From hardy succulents to dramatic tropicals, find the perfect companion for your space.</p>
+      <div class="relative group max-w-2xl">
+        <form action="/library" method="get" role="search">
+          {{ env_hidden|safe }}
+          <div class="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
+            <span class="material-symbols-outlined text-primary text-2xl">search</span>
+          </div>
+          <input id="lib-search" class="block w-full pl-16 pr-6 py-5 bg-surface-container-highest/50 border-none rounded-full text-on-surface placeholder-on-surface-variant/60 focus:ring-2 focus:ring-primary/30 transition-all text-lg" placeholder="Search by name, light, or care level..." type="text" name="q" value="{{ search_value_esc|safe }}" />
+        </form>
+      </div>
+    </div>
+    <div class="flex flex-wrap gap-3 mb-10">
+      <a href="{{ all_href|safe }}" class="px-6 py-2 rounded-full {{ all_btn_class }} font-medium text-sm transition-all shadow-sm">All Species</a>
+      <a href="{{ indoor_href|safe }}" class="px-6 py-2 rounded-full {{ indoor_btn_class }} text-sm">Indoor</a>
+      <a href="{{ outdoor_href|safe }}" class="px-6 py-2 rounded-full {{ outdoor_btn_class }} text-sm">Outdoor</a>
+      <a href="{{ reset_href|safe }}" class="px-6 py-2 rounded-full bg-surface-container-high text-on-surface text-sm">Reset</a>
+    </div>
+    <div id="lib-content" class="grid grid-cols-1 gap-8">{{ content|safe }}</div>
+  </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+  var searchEl = document.getElementById('lib-search');
+  var topEl = document.getElementById('lib-search-top');
+  if (topEl && searchEl) {
+    topEl.value = searchEl.value || '';
+    topEl.addEventListener('input', function() { searchEl.value = topEl.value; liveFilter(); });
+    searchEl.addEventListener('input', function() { topEl.value = searchEl.value; });
+  }
+  function liveFilter() {
+    if (!searchEl) return;
+    var q = (searchEl.value || '').trim().toLowerCase();
+    var blocks = document.querySelectorAll('.lib-category-block');
+    blocks.forEach(function(block) {
+      var rows = block.querySelectorAll('.lib-row');
+      var visible = 0;
+      rows.forEach(function(row) {
+        var text = (row.getAttribute('data-search') || '').toLowerCase();
+        var show = !q || text.indexOf(q) !== -1;
+        if (show) { row.classList.remove('lib-row-hidden'); visible++; }
+        else { row.classList.add('lib-row-hidden'); }
+      });
+      block.style.display = visible > 0 ? '' : 'none';
+    });
+  }
+  if (searchEl) {
+    searchEl.addEventListener('input', liveFilter);
+    searchEl.addEventListener('keyup', liveFilter);
+  }
+})();
+</script>
+{% endblock %}

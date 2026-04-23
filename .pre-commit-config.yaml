@@ -1,0 +1,14 @@
+# Optional. Install with:
+#   pip install pre-commit
+#   pre-commit install
+#
+# Deliberately minimal: only Ruff (format + lint, autofix on).
+# No pytest hook — too slow for every commit; run `make check` before pushing.
+# No whitespace / EOL plugins — Ruff's formatter covers that.
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff-format
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]

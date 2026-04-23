@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}{{ plant.display_name }} — Plant Pal{% endblock %}
+
+{% block content %}
+{% include "_components/nav.html" %}
+
+<main id="main" class="pp-page" style="max-width: 68rem; margin: 0 auto; padding: 1.5rem 1rem 4rem;">
+  <nav aria-label="Breadcrumb" style="margin-bottom: 0.75rem;">
+    <a class="pp-chip pp-chip--ghost" href="/plants">← My plants</a>
+  </nav>
+
+  <header class="pp-page-header">
+    <div>
+      <h1 class="pp-page-header__title">{{ plant.display_name }}</h1>
+      <p class="pp-page-header__subtitle" style="font-weight: 600; color: var(--pp-ink);">{{ place_cue or plant.room_name }} · {{ due_label }}</p>
+      <p class="pp-card__type" style="margin: 0.35rem 0 0 0;">{{ archetype_cue }}</p>
+      <a class="pp-btn pp-btn--sm pp-btn--ghost" href="/plants/{{ plant.id }}/edit" style="margin-top: 0.75rem; display: inline-block;">Edit</a>
+    </div>
+    <div class="pp-page-header__actions" style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
+      {% if water_date_error %}{% include "_components/water_date_error_banner.html" %}{% endif %}
+      {% set _water_next = "/plants/" ~ plant.id %}{% with plant_id=plant.id, next_url=_water_next, today_iso=today_iso, field_id_prefix=plant.id %}{% include "_components/water_controls.html" %}{% endwith %}
+      <form method="post" action="/plants/{{ plant.id }}/remove"
+            onsubmit="return confirm('Remove this plant? This cannot be undone.');">
+        <button class="pp-btn pp-btn--ghost" type="submit">Remove</button>
+      </form>
+    </div>
+  </header>
+
+  <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 1.5rem; align-items: start;">
+    <section aria-label="Plant portrait">
+      <div class="pp-card" style="padding: 0; overflow: hidden;">
+        <div class="pp-card__media" style="aspect-ratio: 1 / 1;">{{ thumb_html|safe }}</div>
+        <div class="pp-card__body">
+          <div class="pp-card__eyebrow">{% if place_cue %}{{ place_cue }}{% else %}{{ plant.room_name }}{% endif %}</div>
+          <p class="pp-card__type">{{ archetype_cue }}</p>
+          <div class="pp-card__meta" style="flex-wrap: wrap;">
+            <span class="pp-chip pp-chip--hist-{{ history_badge.variant }}" title="{{ history_badge.title }}">{{ history_badge.label }}</span>
+            <span class="pp-card__streak">{{ plant.current_streak }}d streak</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 1rem;">
+        {% for s in stats %}
+        <div class="pp-stat">
+          <span class="pp-stat__label">{{ s.label }}</span>
+          <span class="pp-stat__value">{{ s.value }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section aria-label="Recommendation + history" style="display: flex; flex-direction: column; gap: 1.25rem;">
+      <div class="pp-callout">
+        <strong>Why this plan</strong>
+        <p class="m-0 leading-snug" style="margin-top: 0.35rem; font-size: 0.92rem; color: var(--pp-ink-muted);" title="{{ confidence_chip.today_title }}">For today: {{ confidence_chip.short }}</p>
+        {% if rec.factors %}
+        <ul class="mt-2 mb-0">{% for f in rec.factors %}<li>{{ f }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      <div>
+        <div class="pp-section-header">
+          <h2>Recent activity</h2>
+          <span class="pp-section-header__meta">{{ timeline|length }} entries</span>
+        </div>
+        {% if timeline %}
+        <ul class="pp-timeline">
+          {% for row in timeline %}
+          <li class="pp-timeline__item">
+            <span class="pp-timeline__when">{{ row.when }}</span>
+            <span class="pp-timeline__what">{{ row.what }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <div class="pp-empty">
+          <p class="pp-empty__title">No history yet</p>
+          <p class="pp-empty__body">Once you log a watering or an event, it'll show here.</p>
+        </div>
+        {% endif %}
+      </div>
+
+      <div>
+        <div class="pp-section-header">
+          <h2>Log an event</h2>
+          <span class="pp-section-header__meta">Changes confidence while things settle</span>
+        </div>
+        <form method="post" action="/plants/{{ plant.id }}/event"
+              style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+          <input type="hidden" name="next" value="/plants/{{ plant.id }}"/>
+          <label for="event-kind" style="font-size: 0.85rem; color: var(--pp-ink-muted);">What changed?</label>
+          <select id="event-kind" name="kind" required
+                  style="padding: 0.45rem 0.6rem; border-radius: 10px; border: 1px solid var(--pp-line); background: var(--surface-container-lowest); font: inherit;">
+            {% for k in event_kinds %}
+            <option value="{{ k }}">{{ k.replace('_', ' ').title() }}</option>
+            {% endfor %}
+          </select>
+          <input id="event-detail" name="detail" type="text"
+                 placeholder="Optional note (e.g. moved near south window)"
+                 maxlength="500"
+                 style="flex: 1; min-width: 16rem; padding: 0.45rem 0.65rem; border-radius: 10px; border: 1px solid var(--pp-line); background: var(--surface-container-lowest); font: inherit;"/>
+          <button class="pp-btn pp-btn--sm" type="submit">Record</button>
+        </form>
+      </div>
+    </section>
+  </div>
+</main>
+{% endblock %}

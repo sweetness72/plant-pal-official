@@ -1,0 +1,18 @@
+# Development dependencies — human-edited source of truth.
+#
+# These are layered on top of the runtime lock: `pip-compile` uses
+# requirements.lock as a *constraints* file so dev and prod can never
+# disagree on a shared dependency's version.
+#
+# Edit + `make lock` to regenerate requirements-dev.lock.
+
+-c requirements.lock
+
+pytest>=8.0
+
+# Ruff replaces Black + Flake8 + isort. One tool, one config in pyproject.toml.
+ruff>=0.6
+
+# httpx is a hard dependency of starlette.testclient; pin so `make test` never
+# surprises us.
+httpx>=0.27

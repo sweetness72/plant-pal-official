@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Plant Pal - Add New Plant</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/static/css/main.css"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="/static/js/tw-config.js"></script>
+<style>
+.glass-panel { background: rgba(255, 251, 255, 0.75); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
+.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+.font-serif-italic { font-family: 'Newsreader', serif; font-style: italic; }
+.sketch-border { border: 2px dashed #bebb91; }
+#species-results:empty { display: none; }
+.species-hit { padding: 0.65rem 0.8rem; min-height: 44px; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; margin: 0.35rem; border-radius: 0.75rem; background: rgba(255,255,255,0.65); }
+.species-hit:hover { background: #f5f3ef; }
+.species-hit-icon svg { width: 22px; height: 22px; }
+.species-hit-icon img { width: 22px; height: 22px; object-fit: cover; border-radius: 4px; }
+.species-loading, .species-empty, .selected-species { font-size: 0.85rem; color: #686642; margin-top: 0.5rem; }
+.selected-species { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
+.selected-species-icon svg { width: 22px; height: 22px; }
+.selected-species-icon img { width: 22px; height: 22px; object-fit: cover; border-radius: 4px; }
+.env-chip.active { background: #d2eac5; color: #43573b; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+</style>
+</head>
+<body class="bg-background text-on-surface font-body min-h-screen relative overflow-x-hidden">
+<div class="fixed inset-0 z-0">
+  <img alt="Sun-drenched kitchen" class="w-full h-full object-cover opacity-40 blur-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCH24_9fzYSTEb4F4RT_QtvCMHdHMjfsg9NgM3TQCh9APj-I9iBNJCDKuQrH2JdEvk7LnVo8rvzyfYyt9BCsdT4OlJ_zGDgGfKekpqSWMPXlTRVJ1a5CDz7dAZUHBFah8IA51PALEjMC6x_LA8rIEm1ljNygNSWMFJp0dpa-SHnmOO4zKQP0tyDAdI7HeSs--1UdfwjeuMu4QuJYrFZd9CUwHMCsygCcKp8FdrOvLvnB4Q53lWmzWsjFUYpH85TGuu551paQyoYYio"/>
+</div>
+{% with back_href="/", back_title="Add plant" %}
+  {% include "_components/nav_back.html" %}
+{% endwith %}
+<main class="relative z-10 pt-28 pb-32 px-6 flex justify-center">
+  <div class="glass-panel w-full max-w-3xl rounded-[2rem] p-10 md:p-14 shadow-2xl shadow-on-surface/5 border border-white/40">
+    <div class="mb-12 text-center relative">
+      <div class="w-24 h-24 mb-6 mx-auto rounded-full bg-surface-container-high flex items-center justify-center relative">
+        <img class="w-16 h-16 object-contain" alt="Seedling illustration" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0djAF71h7oBHOJPtCT7lxUWAayQk12X7_uEOCDmKOSp6cuwMgjWoZDBYnjJSjFo1IR27v1NWAQHRxJTJzIxCD4yb_v0-afXe9TD2Uf85SyUzHLAFomGPUYaxm7nyvl1G_G-geS2yviVkW9qDbAJL2xa6M1I0YnALmp2UgbS1Mu-mb36JqQAmQfkYBrkj4iqHsZPMzXcRLhwyLUDpRgFMnM0oRWRl6dSiQkFGRLToVjivEGSKuJcgU_SwvhxSWVsPqDUvmxMB3NkY"/>
+        <div class="absolute inset-0 border-2 border-dashed border-outline-variant/30 rounded-full scale-110"></div>
+      </div>
+      <h1 class="font-headline text-5xl md:text-6xl text-primary italic mb-3">Add a plant</h1>
+      <p class="text-on-surface-variant font-body text-lg">Give it a name and we'll take care of the rest.</p>
+      {% if archetype %}
+      <div class="mt-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-container/40 text-on-primary-container text-sm">
+        <span class="material-symbols-outlined text-sm">{{ archetype.icon }}</span>
+        <span>{{ archetype.label }}</span>
+        <a href="/add-plant" class="ml-2 text-xs underline opacity-70 hover:opacity-100">change</a>
+      </div>
+      {% endif %}
+    </div>
+    <form class="space-y-10" method="post" action="/add-plant" enctype="multipart/form-data">
+      <input type="hidden" name="template_id" id="template_id" value="{{ prefill_template_id|default('', true) }}" />
+      <input type="hidden" name="pot_material" value="{{ archetype.pot if archetype else 'plastic' }}" />
+      <input type="hidden" name="next" value="/" />
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="flex flex-col gap-2">
+          <label class="label-md font-medium text-on-surface-variant ml-1" for="display_name">Nickname (what you call this plant)</label>
+          <input class="w-full h-14 px-6 bg-surface-container-highest rounded-xl border-none focus:ring-2 focus:ring-primary focus:bg-surface-bright transition-all placeholder:text-outline/50" id="display_name" name="display_name" placeholder="e.g. Monty" type="text" required/>
+        </div>
+        <div class="flex flex-col gap-2 relative">
+          <label class="label-md font-medium text-on-surface-variant ml-1" for="species">Search species...</label>
+          <div class="relative">
+            <input class="w-full h-14 pl-12 pr-6 bg-surface-container-highest rounded-xl border-none focus:ring-2 focus:ring-primary focus:bg-surface-bright transition-all placeholder:text-outline/50" id="species" name="species" placeholder="Monstera Deliciosa..." type="text" autocomplete="off" value="{{ prefill_template_name|default('', true) }}"/>
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+          </div>
+          <div class="selected-species" id="selected-species" style="{% if prefill_template_id %}display:flex;{% else %}display:none;{% endif %}">
+            {% if prefill_template_id %}
+              <span class="selected-species-icon">
+                {% if prefill_template_image %}<img src="{{ prefill_template_image }}" alt="" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/static/plants/generic_plant.png';">{% endif %}
+              </span>
+              <span>Selected: {{ prefill_template_name }}</span>
+            {% endif %}
+          </div>
+          <div id="species-results"></div>
+        </div>
+      </div>
+      <div class="flex flex-col gap-4">
+        <span class="label-md font-medium text-on-surface-variant ml-1">Environment</span>
+        <div class="flex flex-wrap gap-3">
+          <button class="env-chip active px-6 py-2 rounded-full bg-surface-container-high text-on-surface-variant hover:bg-primary-container hover:text-on-primary-container transition-all" type="button" data-env="">All</button>
+          <button class="env-chip px-6 py-2 rounded-full bg-surface-container-high text-on-surface-variant hover:bg-primary-container hover:text-on-primary-container transition-all" type="button" data-env="indoor">Indoor</button>
+          <button class="env-chip px-6 py-2 rounded-full bg-surface-container-high text-on-surface-variant hover:bg-primary-container hover:text-on-primary-container transition-all" type="button" data-env="outdoor">Outdoor</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+        <div class="flex flex-col gap-2">
+          <label class="label-md font-medium text-on-surface-variant ml-1" for="room_name">Room or location</label>
+          <input class="w-full h-14 px-6 bg-surface-container-highest rounded-xl border-none focus:ring-2 focus:ring-primary focus:bg-surface-bright transition-all placeholder:text-outline/50" id="room_name" name="room_name" list="room-suggestions" placeholder="e.g. Kitchen window, Living room shelf" required type="text" value="{{ prefill_room|default('', true) }}"/>
+          <datalist id="room-suggestions">
+            {% for r in room_suggestions %}<option value="{{ r }}"></option>{% endfor %}
+          </datalist>
+        </div>
+        <div class="flex flex-col gap-2">
+          <label class="label-md font-medium text-on-surface-variant ml-1" for="position_note">Spot (optional)</label>
+          <input class="w-full h-14 px-6 bg-surface-container-highest rounded-xl border-none focus:ring-2 focus:ring-primary focus:bg-surface-bright transition-all placeholder:text-outline/50" id="position_note" name="position_note" placeholder="e.g. left, by sink, back shelf" type="text" maxlength="120"/>
+        </div>
+        <div class="flex flex-col gap-2">
+          <label class="label-md font-medium text-on-surface-variant ml-1" for="light_level">Light level</label>
+          <select class="w-full h-14 px-6 bg-surface-container-highest rounded-xl border-none focus:ring-2 focus:ring-primary focus:bg-surface-bright transition-all appearance-none cursor-pointer" id="light_level" name="light_level">
+            <option value="bright"{% if archetype and archetype.light == 'bright' %} selected{% endif %}>Direct sunlight</option>
+            <option value="medium"{% if not archetype or archetype.light == 'medium' %} selected{% endif %}>Bright indirect</option>
+            <option value="low"{% if archetype and archetype.light == 'low' %} selected{% endif %}>Low light / shade</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="label-md font-medium text-on-surface-variant ml-1" for="pot_diameter_inches">Pot diameter (inches)</label>
+        <input class="w-full h-14 px-6 bg-surface-container-highest rounded-xl border-none focus:ring-2 focus:ring-primary focus:bg-surface-bright transition-all placeholder:text-outline/50" id="pot_diameter_inches" name="pot_diameter_inches" placeholder="e.g. 6" type="number" value="8" min="1" max="24"/>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="label-md font-medium text-on-surface-variant ml-1" for="photo">Photo (optional)</label>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-surface-container-highest rounded-xl">
+          <input id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif" class="flex-1 text-sm"/>
+          <img id="photo-preview" alt="" class="w-20 h-20 object-cover rounded-lg hidden border border-outline-variant/30"/>
+        </div>
+        <p class="text-xs text-on-surface-variant ml-1">We'll resize large photos automatically (max ~10 MB).</p>
+      </div>
+      <div class="pt-10 flex justify-center">
+        <button class="pp-btn" type="submit">Welcome Home</button>
+      </div>
+    </form>
+  </div>
+</main>
+<div class="fixed top-1/4 -left-20 w-64 h-64 bg-primary-container/20 rounded-full blur-[100px] pointer-events-none"></div>
+<div class="fixed bottom-1/4 -right-20 w-80 h-80 bg-secondary-container/20 rounded-full blur-[120px] pointer-events-none"></div>
+<script>
+(function() {
+  var clockEl = document.getElementById('add-clock');
+  function tick() {
+    if (!clockEl) return;
+    var now = new Date();
+    var h = now.getHours();
+    var m = now.getMinutes();
+    var h12 = h % 12 || 12;
+    clockEl.textContent = h12 + ':' + (m < 10 ? '0' : '') + m + (h < 12 ? ' AM' : ' PM');
+  }
+  tick();
+  setInterval(tick, 60000);
+
+  var speciesEl = document.getElementById('species');
+  var templateIdEl = document.getElementById('template_id');
+  var resultsEl = document.getElementById('species-results');
+  var selectedEl = document.getElementById('selected-species');
+  var debounce = null;
+
+  speciesEl.addEventListener('input', function() {
+    var q = speciesEl.value.trim();
+    if (debounce) clearTimeout(debounce);
+    if (!q) { resultsEl.innerHTML = ''; return; }
+    resultsEl.innerHTML = '<p class="species-loading">Searching...</p>';
+    debounce = setTimeout(function() {
+      var envBtn = document.querySelector('.env-chip.active');
+      var env = envBtn && envBtn.getAttribute('data-env') ? '&environment=' + encodeURIComponent(envBtn.getAttribute('data-env')) : '';
+      fetch('/api/templates/search?q=' + encodeURIComponent(q) + env)
+        .then(function(r) { return r.json(); })
+        .then(function(list) {
+          resultsEl.innerHTML = '';
+          if (!list || list.length === 0) {
+            resultsEl.innerHTML = '<p class="species-empty">No plants match. Try another name or filter.</p>';
+            return;
+          }
+          list.forEach(function(t) {
+            var div = document.createElement('div');
+            div.className = 'species-hit';
+            var iu = t.image_url || '/static/plants/generic_plant.png';
+            var iuEsc = String(iu).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+            div.innerHTML = '<span class="species-hit-icon"><img src="' + iuEsc + '" alt="" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=\'/static/plants/generic_plant.png\';"></span><span>' + (t.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>';
+            div.addEventListener('click', function() {
+              templateIdEl.value = t.id;
+              selectedEl.innerHTML = '<span class="selected-species-icon"><img src="' + iuEsc + '" alt="" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=\'/static/plants/generic_plant.png\';"></span><span>Selected: ' + (t.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>';
+              selectedEl.style.display = 'flex';
+              resultsEl.innerHTML = '';
+              speciesEl.value = t.name || '';
+            });
+            resultsEl.appendChild(div);
+          });
+        });
+    }, 220);
+  });
+
+  document.querySelectorAll('.env-chip').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.env-chip').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      if (speciesEl.value.trim()) speciesEl.dispatchEvent(new Event('input'));
+    });
+  });
+
+  var photoInput = document.getElementById('photo');
+  var photoPreview = document.getElementById('photo-preview');
+  if (photoInput && photoPreview) {
+    photoInput.addEventListener('change', function() {
+      var file = photoInput.files && photoInput.files[0];
+      if (!file) { photoPreview.classList.add('hidden'); photoPreview.removeAttribute('src'); return; }
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        photoPreview.src = e.target.result;
+        photoPreview.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+})();
+</script>
+</body></html>

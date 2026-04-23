@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Add a plant — Plant Pal{% endblock %}
+
+{% block content %}
+{% with back_href="/", back_title="Add a plant" %}
+  {% include "_components/nav_back.html" %}
+{% endwith %}
+
+<main id="main" style="max-width: 56rem; margin: 0 auto; padding: 4rem 1.25rem 4rem;">
+  <header class="pp-page-header" style="margin-bottom: 2rem; align-items: flex-start;">
+    <div>
+      <h1 class="pp-page-header__title">What kind of plant is this?</h1>
+      <p class="pp-page-header__subtitle">Pick the closest match. We'll pre-fill care defaults you can tweak on the next step.</p>
+    </div>
+    <div class="pp-page-header__actions">
+      <a class="pp-btn pp-btn--ghost pp-btn--sm" href="/add-plant?skip=1">Skip, I know what I want</a>
+    </div>
+  </header>
+
+  <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 list-none p-0">
+    {% for a in archetypes %}
+    <li>
+      <a class="pp-card--link" href="/add-plant?archetype={{ a.slug }}"
+         style="display: block; height: 100%; padding: 1.25rem; text-decoration: none;">
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+          <span class="material-symbols-outlined" style="font-size: 28px; color: var(--pp-primary);">{{ a.icon }}</span>
+          <span class="pp-card__title" style="font-size: 1.15rem;">{{ a.label }}</span>
+        </div>
+        <p style="color: var(--pp-ink-muted); margin: 0; font-size: 0.92rem; line-height: 1.4;">{{ a.tagline }}</p>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+
+  <p style="margin-top: 2rem; color: var(--pp-ink-muted); font-size: 0.9rem;">
+    Already know the species? <a href="/library" style="color: var(--pp-primary); font-weight: 600;">Browse the library</a>
+    and tap "Add to my garden".
+  </p>
+</main>
+{% endblock %}

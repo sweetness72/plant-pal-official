@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"{% block html_attr %}{% endblock %}>
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>{% block title %}Plant Pal{% endblock %}</title>
+    <link rel="manifest" href="/manifest.json"/>
+    <meta name="theme-color" content="{% block theme_color %}#7d8b6f{% endblock %}"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-25..200&amp;display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="/static/css/main.css"/>
+    {% block head %}{% endblock %}
+</head>
+<body{% block body_attr %}{% endblock %}>
+    <a class="skip-link" href="#main">Skip to main content</a>
+    {% block content %}{% endblock %}
+    {% block scripts %}{% endblock %}
+</body>
+</html>

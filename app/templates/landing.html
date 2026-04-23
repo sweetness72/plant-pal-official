@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block html_attr %} class="light"{% endblock %}
+{% block theme_color %}#566a4d{% endblock %}
+{% block title %}Plant Pal — The Living Journal{% endblock %}
+
+{% block head %}
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="/static/js/tw-config.js"></script>
+  <style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .glass-panel { backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
+    .sketchbook-shadow { box-shadow: 0 40px 80px -15px rgba(58,57,26,0.08); }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #bebb91; border-radius: 10px; }
+    body { background-color: #fffbff; color: #3a391a; font-family: 'Plus Jakarta Sans', sans-serif; min-height: max(884px, 100dvh); }
+  </style>
+{% endblock %}
+
+{% block body_attr %} class="!p-0 m-0 min-h-screen relative overflow-x-hidden bg-surface-bright"{% endblock %}
+
+{% block content %}
+  {% include "_components/nav.html" %}
+
+  <div class="fixed inset-0 z-0 opacity-40 blur-[2px] md:blur-sm scale-105">
+    <img alt="Cozy, sun-drenched lofi kitchen background with soft light and indoor plants" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAN5C4M7YEiHuULmiJ1G-U9KHGehH0sflZ9PE25qxT4W5jmtGrG5eQrfHu1LnM0OJTTWRIqr_TX_e6fvEHXiLhKSwPCqDWBE_D7IwG7b5VcrCTUTJuZuBeQxTJgVXCynuenbbiLVzc7TPr2bNI3Dbh6-Oz1ur1mWAhgB_1GgVdkV1KjrXngEZIzT4ZLETmBoSr3010aGJyRTn4_2dS97rge9G3IRkTHXGokWxip3fSeLLDe3_EppEgYbuCTU_tNhA6AZYvkwK7s_4M"/>
+  </div>
+
+  <main id="main" class="relative z-10 pt-24 pb-40 px-4 md:px-8 max-w-6xl mx-auto flex flex-col items-center">
+    <div class="relative w-full flex justify-center mb-[-2rem] animate-pulse">
+      <div class="bg-surface-container-low/60 p-4 rounded-full border border-outline-variant/10 shadow-inner">
+        <img alt="Saguaro Cactus Illustration" class="w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcIFcXbor90EbhcfoJZ_WEJcVC01XlPKWtiVNrrSSF73HBC_P0um1op4jPx6LA-m1HoCoTjvs25FhsDX2_phIZLGTHsi3oF7Bx55eW-Q8xw7UWrwGV3Q6BajGS8eEaq0_O5VqC6zfeVdoj0ydv-MnOP3ep9drW8Czsp4ec69-c2daCJ9CgRzZxz2Hhblmurv4yx11DSoZR5lSt3CXeR2aGcgmAtM8DQLIiHSya3j6DaUV9oCT4_Q83xVrG2xUVwFTPmAgZyNbC_fA"/>
+      </div>
+      
+    </div>
+
+    <section class="w-full bg-white/80 backdrop-blur-3xl rounded-[3rem] p-8 md:p-12 sketchbook-shadow border border-white/40 flex flex-col gap-10">
+      <div class="flex flex-col md:flex-row justify-between items-start gap-8">
+        <div class="flex-1">
+          <h1 class="font-[Newsreader] text-5xl md:text-6xl lg:text-7xl text-on-background tracking-tight mb-4 leading-tight"><span id="gardener-greeting">Hello.</span></h1>
+          <p class="font-body text-lg text-on-surface-variant max-w-xl">Here's what your plants need today.</p>
+        </div>
+        <div class="bg-surface-container-low rounded-3xl p-6 w-full md:w-64 flex items-center md:flex-col md:items-start gap-4 border border-outline-variant/10 shadow-sm">
+          <div class="bg-primary-container p-4 rounded-full text-on-primary-container">
+            <span id="greenhouse-icon" class="material-symbols-outlined text-4xl">partly_cloudy_day</span>
+          </div>
+          <div>
+            <div class="text-[10px] md:text-xs uppercase tracking-widest text-on-surface-variant mb-1">Your Greenhouse</div>
+            <div class="font-[Newsreader] text-3xl text-on-background"><span id="greenhouse-temp">--</span> <span class="text-base font-body text-outline">— <span id="greenhouse-vibe">finding your local vibe</span></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+        <div class="space-y-8">
+          {% if added_name %}<div class="bg-primary-container/70 text-on-primary-container rounded-2xl px-4 py-3 text-sm">Added {{ added_name }}. It is on your list.</div>{% endif %}
+          <div class="flex items-center justify-between px-2">
+            <h2 class="font-[Newsreader] text-3xl text-on-background">Today's Care</h2>
+            <span class="text-sm font-label text-on-surface-variant italic">{{ count }} {{ task_label }}</span>
+          </div>
+          {% if water_date_error %}
+          <div class="px-2">{% include "_components/water_date_error_banner.html" %}</div>
+          {% endif %}
+          <div class="space-y-5 max-h-[420px] overflow-y-auto pr-2 custom-scrollbar">
+            {% if display_actions %}{% for a in display_actions %}
+<div class="group flex items-start justify-between gap-4 p-5 bg-surface-container-lowest rounded-2xl transition-all duration-500 hover:shadow-lg hover:-translate-y-1">
+  <a href="/plants/{{ a.plant_id }}" class="flex items-start gap-4 min-w-0 flex-1" aria-label="Open {{ a.display_name }}">
+    <div class="w-14 h-14 rounded-xl overflow-hidden bg-surface-container flex items-center justify-center flex-shrink-0">{{ a.thumb_html|safe }}</div>
+    <div class="min-w-0">
+      <h3 class="font-body font-bold text-on-background truncate m-0">{{ a.display_name }}</h3>
+      <div class="text-sm font-semibold text-on-background mt-1 truncate" title="{{ a.place_cue }}">
+        <span class="material-symbols-outlined text-base align-middle text-primary" style="vertical-align:-3px;">location_on</span>
+        {{ a.place_cue or a.room_name }}
+      </div>
+      <div class="text-[11px] text-on-surface-variant mt-0.5 truncate">{{ a.archetype_cue }}</div>
+      <div class="mt-1.5 flex items-center flex-wrap gap-1.5">
+        <span class="pp-chip pp-chip--hist-{{ a.history_badge.variant }}" title="{{ a.history_badge.title }}">{{ a.history_badge.label }}</span>
+      </div>
+      <div class="flex items-center gap-2 text-sm text-on-surface font-medium mt-1.5">
+        <span class="material-symbols-outlined text-base text-primary">water_drop</span>
+        <span>{{ a.action_text }}</span>
+      </div>
+      {% if a.note %}<div class="text-[11px] text-outline mt-0.5 truncate">{{ a.note }}</div>{% endif %}
+      <details class="pp-why-disclosure mt-1.5 text-[11px] text-on-surface-variant">
+        <summary class="cursor-pointer hover:text-on-background font-medium">Why?</summary>
+        <div class="mt-1.5 pl-0 space-y-1.5">
+          <p class="m-0 leading-snug" title="{{ a.confidence.today_title }}">For today: {{ a.confidence.short }}</p>
+          {% if a.factors %}
+          <ul class="m-0 pl-4 list-disc space-y-0.5">{% for f in a.factors %}<li>{{ f }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+      </details>
+    </div>
+  </a>
+  <div class="flex-shrink-0 self-start sm:self-center">{% with plant_id=a.plant_id, next_url="/", today_iso=today_iso, field_id_prefix=a.plant_id %}{% include "_components/water_controls.html" %}{% endwith %}</div>
+</div>{% endfor %}{% else %}
+<div class="p-6 bg-surface-container-lowest rounded-2xl text-center text-on-surface-variant">
+  <p class="font-body">{{ empty_msg }}</p>
+  <div class="mt-4 flex items-center justify-center gap-3">
+    <a href="/add-plant" class="pp-btn pp-btn--sm">+ Add plant</a>
+    <a href="/library" class="pp-btn pp-btn--sm pp-btn--ghost">Browse library</a>
+  </div>
+</div>{% endif %}
+          </div>
+          <div class="bg-primary-container/20 p-8 rounded-[2.5rem] border border-primary/10 relative overflow-hidden shadow-sm group">
+            <div class="relative z-10">
+              <div class="flex items-center gap-2 mb-4">
+                <span class="material-symbols-outlined text-primary text-xl">{{ insight_icon }}</span>
+                <div class="text-[10px] uppercase font-bold tracking-[0.2em] text-primary-dim">{{ insight_title }}</div>
+              </div>
+              <p class="font-body text-on-surface-variant leading-relaxed">{{ insight_text }}</p>
+            </div>
+            <span class="material-symbols-outlined absolute -bottom-4 -right-4 text-[100px] text-primary/5 group-hover:rotate-12 transition-transform duration-700">nature_people</span>
+          </div>
+        </div>
+
+        <div class="space-y-8">
+          <h2 class="font-[Newsreader] text-3xl text-on-background px-2">Journal</h2>
+          <a href="/add-plant" class="group block bg-surface-container-high/40 rounded-[2.5rem] overflow-hidden border border-outline-variant/10 shadow-sm hover:shadow-md transition-all">
+            <div class="flex items-center justify-between p-8">
+              <div class="flex items-center gap-4">
+                <span class="material-symbols-outlined text-3xl text-primary">add_circle</span>
+                <span class="font-body font-bold text-lg">Add a new plant</span>
+              </div>
+              <span class="material-symbols-outlined text-2xl text-on-surface-variant group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </div>
+          </a>
+
+          <div class="bg-secondary-container/30 p-8 rounded-[2.5rem] border border-secondary/10 relative overflow-hidden shadow-sm group">
+            <div class="relative z-10">
+              <div class="text-[10px] uppercase font-bold tracking-[0.2em] text-on-surface-variant mb-4">Weekly Note</div>
+              <p class="font-[Newsreader] italic text-2xl md:text-3xl text-on-secondary-container leading-relaxed">"Keep rotating your plants weekly for even growth and healthier stems."</p>
+            </div>
+            <span class="material-symbols-outlined absolute -bottom-8 -right-8 text-[160px] text-secondary/5 group-hover:scale-110 transition-transform duration-1000">edit_note</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="all-plants" class="w-full mt-16 scroll-mt-24">
+      <div class="pp-section-header">
+        <h2>All plants</h2>
+        <span class="pp-section-header__meta">{{ plants_total }} in your home</span>
+      </div>
+      {% if all_plants %}
+      <ul class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 list-none p-0">
+        {% for p in all_plants %}
+        <li>
+          <a class="pp-card pp-card--link" href="/plants/{{ p.id }}">
+            <div class="pp-card__media">{{ p.thumb_html|safe }}</div>
+            <div class="pp-card__body">
+              <div class="pp-card__eyebrow">{% if p.place_cue %}{{ p.place_cue }}{% else %}{{ p.room_name }}{% endif %}</div>
+              <div class="pp-card__title">{{ p.display_name }}</div>
+              <div class="pp-card__type">{{ p.archetype_cue }}</div>
+              <div class="pp-card__meta">
+                <span class="pp-chip pp-chip--status-{{ p.due_tone }}">{{ p.due_short }}</span>
+                <span class="pp-card__streak">{{ p.streak }}d streak</span>
+              </div>
+            </div>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <div class="pp-empty">
+        <p class="pp-empty__title">Your garden awaits</p>
+        <p class="pp-empty__body">Add your first plant to start tracking water and light.</p>
+        <a class="pp-btn" href="/add-plant">+ Add plant</a>
+      </div>
+      {% endif %}
+    </section>
+  </main>
+{% endblock %}
+
+{% block scripts %}
+  <script>{_COZY_CLOCK_JS}</script>
+  <script>
+    (function() {
+      var greetEl = document.getElementById('gardener-greeting');
+      if (greetEl) {
+        var h = new Date().getHours();
+        if (h >= 5 && h < 12) greetEl.textContent = 'Good morning.';
+        else if (h >= 12 && h < 17) greetEl.textContent = 'Good afternoon.';
+        else if (h >= 17 && h < 22) greetEl.textContent = 'Good evening.';
+        else greetEl.textContent = 'Hello.';
+      }
+    })();
+    (function() {
+      var tempEl = document.getElementById('greenhouse-temp');
+      var vibeEl = document.getElementById('greenhouse-vibe');
+      var iconEl = document.getElementById('greenhouse-icon');
+      if (!tempEl || !vibeEl || !iconEl) return;
+
+      function iconFor(code) {
+        if (code === 0) return 'wb_sunny';
+        if (code <= 3) return 'partly_cloudy_day';
+        if (code <= 48) return 'foggy';
+        if (code <= 67) return 'rainy';
+        if (code <= 77) return 'ac_unit';
+        if (code <= 82) return 'rainy';
+        if (code <= 86) return 'ac_unit';
+        return 'thunderstorm';
+      }
+
+      function vibeFrom(tempF, humidity, code) {
+        if (humidity >= 80) return 'humid and lush';
+        if (code === 0 && tempF >= 75) return 'lots of sun lately';
+        if (code <= 3) return 'bright but gentle light';
+        if (code <= 67) return 'rain-kissed and cozy';
+        if (tempF <= 45) return 'cool and restful';
+        return 'steady growing weather';
+      }
+
+      function updateWeather(lat, lon) {
+        var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + encodeURIComponent(lat) +
+          '&longitude=' + encodeURIComponent(lon) +
+          '&current=temperature_2m,relative_humidity_2m,weather_code&temperature_unit=fahrenheit';
+        fetch(url).then(function(r) { return r.json(); }).then(function(d) {
+          var c = d && d.current ? d.current : null;
+          if (!c) throw new Error('No weather data');
+          var temp = Math.round(c.temperature_2m || 0);
+          var humidity = Number(c.relative_humidity_2m || 0);
+          var code = Number(c.weather_code || 0);
+          tempEl.textContent = temp + '°F';
+          vibeEl.textContent = vibeFrom(temp, humidity, code);
+          iconEl.textContent = iconFor(code);
+        }).catch(function() {
+          tempEl.textContent = '--';
+          vibeEl.textContent = 'weather unavailable';
+          iconEl.textContent = 'partly_cloudy_day';
+        });
+      }
+
+      if (!navigator.geolocation) {
+        vibeEl.textContent = 'location unavailable';
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        function(pos) { updateWeather(pos.coords.latitude, pos.coords.longitude); },
+        function() { vibeEl.textContent = 'enable location for local weather'; },
+        { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 }
+      );
+    })();
+
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+  </script>
+{% endblock %}

@@ -48,6 +48,7 @@ class CareTemplate:
     environment: str = "indoor"  # "indoor" | "outdoor"
     category: str = ""  # e.g. "Foliage", "Herbs & Spices", "Flowering Perennials"
     growing_instructions: str = ""  # care and growing steps for library
+    visual_type: str = ""  # archetype key → /static/plants/{visual_type}.png
 
 
 @dataclass
@@ -67,6 +68,19 @@ class Plant:
     current_streak: int = 0
     longest_streak: int = 0
     badges_earned: list[int] = field(default_factory=list)  # milestone counts e.g. [3, 5, 10]
+    # Image resolution (optional; fall back to template + defaults — see core/plant_images.py)
+    category: Optional[str] = None  # "indoor" | "outdoor" for fallback PNGs
+    visual_type: Optional[str] = None  # archetype; None → inherit from template
+    image_override: Optional[str] = None  # full URL or path under site root
+    # Recommendation v2 interval estimator. Nullable on fresh plants and
+    # on DBs that pre-date migration 2. ``observation_count`` counts
+    # waterings integrated (not intervals), so ``mean``/``var`` become
+    # meaningful after the second watering.
+    interval_mean_days: Optional[float] = None
+    interval_var_days: Optional[float] = None
+    observation_count: int = 0
+    # Free-text spot hint: "left", "by sink", etc. (human recognition only)
+    position_note: str | None = None
 
     def get_default_drying_days(self) -> int:
         if self.template:
@@ -92,3 +106,48 @@ class Action:
     amount_oz: Optional[int] = None
     note: str = ""
     priority: int = 0
+
+
+class Confidence(str, Enum):
+    """Bucketed confidence the engine has in today's recommendation.
+
+    Kept to three buckets on purpose — a continuous number would
+    overstate precision for a model this small. See docs in
+    ``core/drying_model.py::_score_confidence`` for the exact rules.
+    """
+
+    LOW = "low"        # new plant, sparse history, stale, or recent context change
+    MEDIUM = "medium"  # enough history to be useful, but still noisy or early
+    HIGH = "high"      # many observations and the plant behaves consistently
+
+
+class ReasonCode(str, Enum):
+    """Why the engine returned this recommendation. Stable keys so the UI
+    can localize/reword without changing the engine."""
+
+    NEW_PLANT = "new_plant"                  # first watering — start the timer
+    DUE_TODAY = "due_today"                  # today == predicted dry date
+    OVERDUE = "overdue"                      # today > predicted dry date
+    SOIL_CHECK_LOW_CONFIDENCE = "soil_check_low_confidence"  # CHECK emitted 1 day before due
+    STALE_HISTORY = "stale_history"          # last watered far longer than the interval
+    NOT_DUE = "not_due"                      # nothing to do today
+
+
+@dataclass
+class Recommendation:
+    """Engine output with room for explanation + confidence.
+
+    ``action`` stays the single source of truth for "what should the user do".
+    Everything else is metadata the UI can choose to surface.
+
+    Phase 1: populated from the existing drying model with history-aware
+    confidence. Phase 2+: mean/variance come from an online estimator and
+    ``factors`` starts listing learned offsets too.
+    """
+
+    action: Optional[Action]
+    reason_code: ReasonCode
+    factors: list[str] = field(default_factory=list)
+    confidence: Confidence = Confidence.LOW
+    predicted_interval_days: float = 0.0
+    observations_used: int = 0

@@ -1,0 +1,48 @@
+{#
+  Shared primary navigation (desktop sticky header + mobile bottom bar).
+
+  Usage:
+      {% include "_components/nav.html" %}
+
+  Context:
+      active  -- one of "today" | "plants" | "library" | "add"
+                 (optional; unknown values simply show nothing highlighted)
+#}
+{% set _active = active|default("") %}
+
+<header class="pp-nav" role="banner" aria-label="Primary">
+  <a class="pp-nav__brand" href="/">Plant Pal</a>
+  <nav class="pp-nav__links" aria-label="Primary sections">
+    <a class="pp-nav__link" href="/"
+       {% if _active == "today" %}aria-current="page"{% endif %}>Today</a>
+    <a class="pp-nav__link" href="/plants"
+       {% if _active == "plants" %}aria-current="page"{% endif %}>My Plants</a>
+    <a class="pp-nav__link" href="/library"
+       {% if _active == "library" %}aria-current="page"{% endif %}>Library</a>
+  </nav>
+  <a class="pp-btn pp-btn--sm" href="/add-plant"
+     {% if _active == "add" %}aria-current="page"{% endif %}>+ Add</a>
+</header>
+
+<nav class="pp-nav-mobile" aria-label="Primary (mobile)">
+  <a class="pp-nav-mobile__link" href="/"
+     {% if _active == "today" %}aria-current="page"{% endif %}>
+    <span class="material-symbols-outlined">home</span>
+    <span>Today</span>
+  </a>
+  <a class="pp-nav-mobile__link" href="/plants"
+     {% if _active == "plants" %}aria-current="page"{% endif %}>
+    <span class="material-symbols-outlined">potted_plant</span>
+    <span>My Plants</span>
+  </a>
+  <a class="pp-nav-mobile__link" href="/library"
+     {% if _active == "library" %}aria-current="page"{% endif %}>
+    <span class="material-symbols-outlined">local_library</span>
+    <span>Library</span>
+  </a>
+  <a class="pp-nav-mobile__link" href="/add-plant"
+     {% if _active == "add" %}aria-current="page"{% endif %}>
+    <span class="material-symbols-outlined">add_circle</span>
+    <span>Add</span>
+  </a>
+</nav>

@@ -1,0 +1,57 @@
+[project]
+name = "plant-pal"
+version = "0.1.0"
+description = "A cozy, self-hosted plant-care companion."
+requires-python = ">=3.12"
+
+# -----------------------------------------------------------------------------
+# Ruff: lint + format. Single tool replaces Black + Flake8 + isort.
+# Run with `make lint` / `make format` / `make check`.
+# -----------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["data", ".venv", "*.db"]
+
+[tool.ruff.lint]
+# Small, opinionated rule set. Each group earns its spot:
+#   E, W  : pycodestyle — catches real style issues the formatter can't.
+#   F     : pyflakes   — actual bugs (undefined names, unused imports).
+#   I     : isort      — import order. Free after the formatter runs.
+#   B     : bugbear    — classic Python gotchas (mutable defaults, etc.).
+#   UP    : pyupgrade  — nudges syntax toward Python 3.12 idioms.
+#   SIM   : simplify   — mild readability wins, nothing dogmatic.
+select = ["E", "W", "F", "I", "B", "UP", "SIM"]
+ignore = [
+    "E501",   # line length — the formatter owns this; noisy to flag twice.
+    "B008",   # FastAPI uses Depends() as default values; flagging adds noise.
+    "SIM108", # occasional `if/else` is clearer than a ternary; don't force it.
+    # SIM118's auto-fix turns `k in row.keys()` into `row.get(k, default)`,
+    # which is WRONG for sqlite3.Row objects (no .get() method). We use
+    # `key in row` directly where we need it.
+    "SIM118",
+    # UP042 wants `class Foo(str, Enum)` → `class Foo(StrEnum)`. That
+    # changes `str(Foo.BAR)` from `"Foo.BAR"` to `"bar"`, which silently
+    # breaks Jinja templates and log strings that relied on the old
+    # repr. Migrating the enums is a product decision, not a lint one.
+    "UP042",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests may have long assertions and duplicated names across scenarios.
+"tests/*" = ["B011"]
+# app/main.py registers routers after the FastAPI() instance exists and
+# middleware is installed. That's an intentional structural pattern, not a
+# mistake — so the module-level import check doesn't apply here.
+"app/main.py" = ["E402"]
+
+[tool.ruff.format]
+# Black-compatible defaults. No customization on purpose.
+
+# -----------------------------------------------------------------------------
+# Pytest config moves here from pytest.ini. One config file for the project.
+# -----------------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-ra --strict-markers"

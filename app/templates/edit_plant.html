@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Edit {{ plant.display_name }} — Plant Pal{% endblock %}
+
+{% block content %}
+{% include "_components/nav.html" %}
+
+<main id="main" class="pp-page" style="max-width: 40rem; margin: 0 auto; padding: 1.5rem 1rem 4rem;">
+  <nav aria-label="Breadcrumb" style="margin-bottom: 0.75rem;">
+    <a class="pp-chip pp-chip--ghost" href="/plants/{{ plant.id }}">← {{ plant.display_name }}</a>
+  </nav>
+
+  <header class="pp-page-header" style="margin-bottom: 1.25rem;">
+    <div>
+      <h1 class="pp-page-header__title">Edit plant</h1>
+      <p class="pp-page-header__subtitle">Nickname, place, and care type — for you, not a label key.</p>
+    </div>
+  </header>
+
+  <form method="post" action="/plants/{{ plant.id }}/edit" class="pp-card pp-card--flat" style="display: flex; flex-direction: column; gap: 1rem;">
+    <div>
+      <label for="display_name" class="pp-stat__label">Nickname</label>
+      <input id="display_name" name="display_name" type="text" required maxlength="200"
+             value="{{ plant.display_name }}"
+             style="width: 100%; margin-top: 0.35rem; padding: 0.55rem 0.75rem; border-radius: 12px; border: 1px solid var(--pp-line); font: inherit;"/>
+    </div>
+    <div>
+      <label for="room_name" class="pp-stat__label">Room or location</label>
+      <input id="room_name" name="room_name" type="text" required maxlength="200" list="room-suggestions"
+             value="{{ plant.room_name }}"
+             style="width: 100%; margin-top: 0.35rem; padding: 0.55rem 0.75rem; border-radius: 12px; border: 1px solid var(--pp-line); font: inherit;"/>
+      <datalist id="room-suggestions">{% for r in room_suggestions %}<option value="{{ r }}"></option>{% endfor %}</datalist>
+    </div>
+    <div>
+      <label for="position_note" class="pp-stat__label">Spot (optional)</label>
+      <input id="position_note" name="position_note" type="text" maxlength="120" placeholder="e.g. left windowsill, by sink, back corner"
+             value="{{ plant.position_note or '' }}"
+             style="width: 100%; margin-top: 0.35rem; padding: 0.55rem 0.75rem; border-radius: 12px; border: 1px solid var(--pp-line); font: inherit;"/>
+    </div>
+    <div>
+      <label for="template_id" class="pp-stat__label">Care template (plant type)</label>
+      <select id="template_id" name="template_id" style="width: 100%; margin-top: 0.35rem; padding: 0.55rem 0.75rem; border-radius: 12px; border: 1px solid var(--pp-line); font: inherit;">
+        <option value="" {% if not plant.template %}selected{% endif %}>— None —</option>
+        {% for t in care_templates %}
+        <option value="{{ t.id }}" {% if plant.template and (t.id == plant.template.id) %}selected{% endif %}>{{ t.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+      <div>
+        <label for="light_level" class="pp-stat__label">Light</label>
+        <select id="light_level" name="light_level" style="width: 100%; margin-top: 0.35rem; padding: 0.55rem 0.75rem; border-radius: 12px; border: 1px solid var(--pp-line); font: inherit;">
+          <option value="low"{% if plant.light_level.value == 'low' %} selected{% endif %}>Low / shade</option>
+          <option value="medium"{% if plant.light_level.value == 'medium' %} selected{% endif %}>Bright indirect</option>
+          <option value="bright"{% if plant.light_level.value == 'bright' %} selected{% endif %}>Direct / bright</option>
+        </select>
+      </div>
+      <div>
+        <label for="pot_material" class="pp-stat__label">Pot</label>
+        <select id="pot_material" name="pot_material" style="width: 100%; margin-top: 0.35rem; padding: 0.55rem 0.75rem; border-radius: 12px; border: 1px solid var(--pp-line); font: inherit;">
+          <option value="plastic"{% if plant.pot_material.value == 'plastic' %} selected{% endif %}>Plastic</option>
+          <option value="ceramic"{% if plant.pot_material.value == 'ceramic' %} selected{% endif %}>Ceramic</option>
+          <option value="terracotta"{% if plant.pot_material.value == 'terracotta' %} selected{% endif %}>Terracotta</option>
+        </select>
+      </div>
+    </div>
+    <div>
+      <label for="pot_diameter_inches" class="pp-stat__label">Pot diameter (inches)</label>
+      <input id="pot_diameter_inches" name="pot_diameter_inches" type="number" min="1" max="36" required
+             value="{{ plant.pot_diameter_inches }}"
+             style="width: 100%; margin-top: 0.35rem; padding: 0.55rem 0.75rem; border-radius: 12px; border: 1px solid var(--pp-line); font: inherit;"/>
+    </div>
+    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
+      <button type="submit" class="pp-btn">Save</button>
+      <a class="pp-btn pp-btn--ghost" href="/plants/{{ plant.id }}">Cancel</a>
+    </div>
+  </form>
+</main>
+{% endblock %}

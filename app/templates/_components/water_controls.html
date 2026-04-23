@@ -1,0 +1,13 @@
+{# Shared: POST /plants/{id}/water — same fields and copy on home + plant detail. #}
+{# Expects: plant_id, next_url, today_iso, field_id_prefix (Jinja reserves "next"; use next_url) #}
+<form method="post" action="/plants/{{ plant_id }}/water" class="pp-soil-pick" style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.4rem;" aria-label="Mark watered">
+  <input type="hidden" name="next" value="{{ next_url }}"/>
+  <label for="wdate-{{ field_id_prefix }}" style="font-size: 0.8rem; color: var(--pp-ink-muted);">Date <span style="color: var(--pp-ink-subtle);">(optional, for earlier waterings)</span></label>
+  <input type="date" id="wdate-{{ field_id_prefix }}" name="watered_on" value="" max="{{ today_iso }}"
+         style="max-width: 12rem; padding: 0.35rem 0.5rem; border-radius: 8px; border: 1px solid var(--pp-line); background: var(--surface-container-lowest); font: inherit;"/>
+  <div style="display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; justify-content: flex-end;">
+    <button type="submit" name="soil_feeling" value="dry" class="pp-soil-btn pp-soil-btn--dry" title="Soil felt dry — needs water sooner">Dry</button>
+    <button type="submit" name="soil_feeling" value="ok" class="pp-soil-btn pp-soil-btn--ok" title="Felt about right — correct timing">Good</button>
+    <button type="submit" name="soil_feeling" value="wet" class="pp-soil-btn pp-soil-btn--wet" title="Still damp — a bit too early">Wet</button>
+  </div>
+</form>

@@ -2,10 +2,11 @@
 8-bit style SVG icons for plant types. Muted palette for modern panel UI.
 Each icon is 24x24 viewBox, pixel-grid style. Each plant slug gets a stable icon via get_icon_svg(slug).
 """
+
 # Muted palette
-_FILL = "#8b9a7a"      # sage
-_STROKE = "#6b7b5c"   # darker green
-_POT = "#a09888"      # warm gray
+_FILL = "#8b9a7a"  # sage
+_STROKE = "#6b7b5c"  # darker green
+_POT = "#a09888"  # warm gray
 
 _GENERIC = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="{fill}" stroke="{stroke}" stroke-width="0.5"><ellipse cx="12" cy="10" rx="6" ry="5"/><rect x="10" y="16" width="4" height="4"/><rect x="9" y="20" width="6" height="2"/></svg>"""
 
@@ -54,12 +55,42 @@ ICONS = {
 
 # Keys used for deterministic fallback when icon_id is a plant slug not in ICONS
 _ICON_VARIANT_KEYS = [
-    "golden-torch", "bunny-ear", "barrel-cactus", "mammillaria", "small-column-cactus",
-    "fiddle-leaf-fig", "money-tree", "foliage-1", "foliage-2", "foliage-3", "foliage-4", "foliage-5",
-    "trailing-1", "trailing-2", "fern-1", "fern-2", "palm-1", "palm-2",
-    "succulent-1", "succulent-2", "succulent-3", "flower-1", "flower-2",
-    "herb-1", "herb-2", "veg-1", "veg-2", "tree-1", "tree-2", "grass-1", "grass-2",
-    "bulb-1", "shrub-1", "climber-1", "easy-1", "easy-2",
+    "golden-torch",
+    "bunny-ear",
+    "barrel-cactus",
+    "mammillaria",
+    "small-column-cactus",
+    "fiddle-leaf-fig",
+    "money-tree",
+    "foliage-1",
+    "foliage-2",
+    "foliage-3",
+    "foliage-4",
+    "foliage-5",
+    "trailing-1",
+    "trailing-2",
+    "fern-1",
+    "fern-2",
+    "palm-1",
+    "palm-2",
+    "succulent-1",
+    "succulent-2",
+    "succulent-3",
+    "flower-1",
+    "flower-2",
+    "herb-1",
+    "herb-2",
+    "veg-1",
+    "veg-2",
+    "tree-1",
+    "tree-2",
+    "grass-1",
+    "grass-2",
+    "bulb-1",
+    "shrub-1",
+    "climber-1",
+    "easy-1",
+    "easy-2",
 ]
 
 

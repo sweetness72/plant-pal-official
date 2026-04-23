@@ -1,0 +1,734 @@
+/* Plant Pal shared stylesheet.
+ *
+ * Cozy lo-fi palette: warm cream, soft browns, plant green.
+ * Extracted verbatim from the legacy _COMMON_CSS / _COZY_BG_CSS strings so that
+ * design tokens and base typography live in one place and can be linked from
+ * every page template.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Nunito:wght@400;600;700&display=swap');
+
+/* ---------------------------------------------------------------------------
+ * Canonical Plant Pal palette.
+ * MUST stay in sync with app/static/js/tw-config.js. When you change a color,
+ * change it in both places — CSS-variable consumers (legacy .pill-btn, .cta,
+ * custom page CSS) and Tailwind utilities (bg-primary, text-on-surface, …)
+ * should always render the same hue.
+ * --------------------------------------------------------------------------*/
+:root {
+    /* Surfaces */
+    --surface:                   #fdf8ee;
+    --surface-bright:            #fef9f1;
+    --surface-container-lowest:  #ffffff;
+    --surface-container-low:     #f8f3eb;
+    --surface-container:         #f2ede5;
+    --surface-container-high:    #ece8e0;
+    --surface-container-highest: #e4dfd2;
+
+    /* Ink */
+    --on-surface:                #2b2a22;
+    --on-surface-variant:        #6a6658;
+
+    /* Primary (plant green) — same as --pp-primary below */
+    --primary:                   #2d6b4a;
+    --primary-dim:               #1f5036;
+    --primary-container:         #d9ecdc;
+    --on-primary-container:      #0f3a23;
+
+    /* Secondary (warm terracotta) */
+    --secondary:                 #b8734a;
+    --secondary-container:       #f6e4d4;
+    --on-secondary-container:    #5a331a;
+
+    /* Outlines */
+    --outline:                   #9a9280;
+    --outline-variant:           #e6dfd0;
+
+    /* Shadows */
+    --shadow-ambient: 0 20px 40px -12px rgba(43, 42, 34, 0.06);
+    --ghost-border:   1px solid rgba(154, 146, 128, 0.18);
+}
+
+* { box-sizing: border-box; }
+
+body {
+    font-family: 'Nunito', system-ui, sans-serif;
+    background: var(--surface);
+    color: var(--on-surface);
+    margin: 0;
+    padding: 1.5rem;
+    min-height: 100vh;
+    position: relative;
+}
+
+a { color: var(--primary-container); text-decoration: none; }
+a:hover { color: #4a8b5e; }
+
+.skip-link {
+    position: absolute;
+    top: -3rem;
+    left: 0.5rem;
+    padding: 0.6rem 1rem;
+    background: #2d6b4a;
+    color: #faf8f5;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    z-index: 100;
+    transition: top 0.2s;
+}
+.skip-link:focus { top: 0.5rem; outline: 2px solid #3d7c5c; outline-offset: 2px; }
+
+.brand {
+    font-family: 'Fredoka', 'Nunito', sans-serif;
+    font-weight: 600;
+    color: var(--primary-container);
+    letter-spacing: -0.02em;
+    text-shadow: 0 1px 2px rgba(45,107,74,0.15);
+}
+.brand-hero { font-size: clamp(1.75rem, 8vw, 2.5rem); line-height: 1.1; margin: 0 0 0.15rem 0; }
+.brand-small { font-size: 1.1rem; margin: 0 0 0.5rem 0; }
+
+/* Legacy pill classes kept for backwards-compat with older markup.
+ * IMPORTANT: the bare `button` selector was removed — buttons no longer get
+ * auto-styled. Use .pp-btn (defined below) for all new buttons. */
+.pill-btn, .cta, .plants-cta, .weather-btn {
+    border-radius: 999px;
+    border: none;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(15,82,52,0.18);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.pill-btn:hover, .cta:hover, .plants-cta:hover, .weather-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 12px 22px rgba(15,82,52,0.22);
+}
+
+input, select {
+    background: var(--surface-container-low);
+    border: none;
+    border-radius: 1.5rem;
+}
+input:focus, select:focus {
+    outline: 2px solid rgba(192, 201, 192, 0.3);
+    background: var(--surface-container-lowest);
+}
+
+/* Touch support: remove tap delay, subtle tap highlight, active feedback */
+.pp-btn, button, a, [role="button"], .search-hit, .filter-btn {
+    -webkit-tap-highlight-color: rgba(45,107,74,0.2);
+    touch-action: manipulation;
+}
+.pp-btn:active, .done:active, .remove-btn:active, .plants-cta:active, .filter-btn:active { opacity: 0.9; }
+@media (max-width: 767px) {
+    button, .remove-btn, .plants-cta, .filter-btn, .lib-search-form button, .weather-btn, .done, .lib-back-top, .cta, .cta-secondary {
+        min-height: 44px;
+        padding: 0.5rem 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .nav a { padding: 0.5rem 0.4rem; }
+}
+
+/* Cozy room background (opaque, behind content). Page-specific opacity so home is "big sell", others don't disrupt. */
+.cozy-bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.cozy-bg[data-page="home"] { opacity: 0.38; }
+.cozy-bg[data-page="library"] { opacity: 0.26; }
+.cozy-bg[data-page="add"] { opacity: 0.22; }
+.cozy-bg[data-page="plants"] { opacity: 0.24; }
+.cozy-bg svg { width: 100%; height: 100%; display: block; }
+
+.cozy-digital-clock {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    min-width: 4rem;
+    padding: 0.4rem 0.6rem;
+    background: rgba(255,255,255,0.72);
+    border-radius: 999px;
+    box-shadow: var(--shadow-ambient);
+    border: var(--ghost-border);
+    font-family: 'Nunito', system-ui, sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #4a4540;
+    text-align: center;
+    letter-spacing: 0.02em;
+    backdrop-filter: blur(8px);
+}
+
+/* ===========================================================================
+ * pp-* design system — first pass (buttons + navigation only).
+ * Intentionally scoped so other components can be added incrementally without
+ * touching what's already here.
+ * =========================================================================*/
+
+:root {
+    --pp-primary:        #2d6b4a;
+    --pp-primary-ink:    #ffffff;
+    --pp-primary-soft:   #d9ecdc;
+    --pp-danger:         #a8442f;
+    --pp-line:           #e6dfd0;
+    --pp-ink:            #2b2a22;
+    --pp-ink-muted:      #726e5f;
+    --pp-shadow-btn:     0 6px 16px -6px rgba(43,42,34,0.18);
+    --pp-shadow-btn-hi:  0 12px 22px -8px rgba(43,42,34,0.22);
+    --pp-radius-pill:    999px;
+    --pp-dur:            160ms;
+    --pp-ease:           cubic-bezier(.2,.7,.2,1);
+    --pp-font-body:      "Plus Jakarta Sans", "Nunito", system-ui, sans-serif;
+    --pp-font-display:   "Newsreader", Georgia, serif;
+}
+
+/* --- Buttons -------------------------------------------------------------- */
+
+.pp-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0 1.25rem;
+    font: 600 0.95rem/1 var(--pp-font-body);
+    letter-spacing: 0.01em;
+    text-transform: none;
+    text-decoration: none;
+    color: var(--pp-primary-ink);
+    background: var(--pp-primary);
+    border: 1px solid transparent;
+    border-radius: var(--pp-radius-pill);
+    box-shadow: var(--pp-shadow-btn);
+    cursor: pointer;
+    transition: box-shadow var(--pp-dur) var(--pp-ease),
+                background var(--pp-dur) var(--pp-ease),
+                color var(--pp-dur) var(--pp-ease);
+}
+.pp-btn:hover  { box-shadow: var(--pp-shadow-btn-hi); color: var(--pp-primary-ink); }
+.pp-btn:active { box-shadow: 0 1px 2px rgba(43,42,34,0.10); }
+.pp-btn:focus-visible { outline: 2px solid var(--pp-primary); outline-offset: 3px; }
+.pp-btn[disabled], .pp-btn[aria-disabled="true"] {
+    opacity: 0.5; cursor: not-allowed; box-shadow: none;
+}
+
+.pp-btn--ghost {
+    background: transparent;
+    color: var(--pp-ink);
+    border-color: var(--pp-line);
+    box-shadow: none;
+}
+.pp-btn--ghost:hover {
+    background: rgba(45,107,74,0.07);
+    color: var(--pp-ink);
+    box-shadow: none;
+}
+
+.pp-btn--danger {
+    background: transparent;
+    color: var(--pp-danger);
+    border-color: var(--pp-danger);
+    box-shadow: none;
+}
+.pp-btn--danger:hover { background: var(--pp-danger); color: #fff; }
+
+.pp-btn--icon { width: 44px; height: 44px; padding: 0; gap: 0; }
+.pp-btn--sm   { min-height: 36px; padding: 0 0.85rem; font-size: 0.85rem; }
+
+/* --- Navigation ----------------------------------------------------------- */
+
+/* Desktop top nav (≥768px).
+ *
+ * The nav is a direct child of <body> on every page; it must span the full
+ * viewport width without relying on any parent padding. Earlier versions
+ * used negative horizontal margins to "bleed to the edge" which broke on
+ * every page because no page gives <body> the matching padding — the nav
+ * ended up 3rem wider than the viewport and clipped into a random corner.
+ * Always: full width, box-sized, fixed to the top, high z-index. */
+.pp-nav {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    display: none;
+    align-items: center;
+    gap: 1.5rem;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.75rem 1.5rem;
+    background: rgba(254,249,241,0.88);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--pp-line);
+}
+@media (min-width: 768px) { .pp-nav { display: flex; } }
+
+.pp-nav__brand {
+    font-family: var(--pp-font-display);
+    font-style: italic;
+    font-size: 1.35rem;
+    color: var(--pp-primary);
+    text-decoration: none;
+}
+.pp-nav__links {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: auto;
+    margin-right: 1rem;
+}
+.pp-nav__link {
+    color: var(--pp-ink-muted);
+    font: 600 0.9rem/1 var(--pp-font-body);
+    text-decoration: none;
+    padding: 0.55rem 0.85rem;
+    border-radius: 10px;
+    transition: background var(--pp-dur) var(--pp-ease),
+                color var(--pp-dur) var(--pp-ease);
+}
+.pp-nav__link:hover { background: rgba(45,107,74,0.07); color: var(--pp-ink); }
+.pp-nav__link[aria-current="page"] {
+    color: var(--pp-primary);
+    background: var(--pp-primary-soft);
+}
+
+/* Mobile bottom bar (<768px) */
+.pp-nav-mobile {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 50;
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.4rem 0.25rem calc(0.4rem + env(safe-area-inset-bottom, 0px));
+    background: rgba(254,249,241,0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--pp-line);
+}
+@media (min-width: 768px) { .pp-nav-mobile { display: none; } }
+
+.pp-nav-mobile__link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    min-width: 56px;
+    min-height: 44px;
+    padding: 0.35rem 0.6rem;
+    text-decoration: none;
+    color: var(--pp-ink-muted);
+    font: 600 0.7rem/1.1 var(--pp-font-body);
+    border-radius: 12px;
+    transition: background var(--pp-dur) var(--pp-ease),
+                color var(--pp-dur) var(--pp-ease);
+}
+.pp-nav-mobile__link .material-symbols-outlined { font-size: 22px; }
+.pp-nav-mobile__link:hover { color: var(--pp-ink); }
+.pp-nav-mobile__link[aria-current="page"] {
+    color: var(--pp-primary);
+    background: var(--pp-primary-soft);
+}
+
+/* Reserve space so page content isn't obscured by the fixed mobile bar.
+ * Every template already has its own generous `pb-*` on <main>, so we only
+ * guarantee a minimum floor here and only on phone widths. */
+@media (max-width: 767.98px) {
+    body { padding-bottom: 72px; }
+}
+
+/* Back-nav for flow pages (Add Plant; Plant Detail later).
+ * Same full-width rules as .pp-nav — no negative margins, always box-sized. */
+.pp-nav-back {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.75rem 1rem;
+    background: rgba(254,249,241,0.88);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--pp-line);
+}
+.pp-nav-back__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: var(--pp-ink);
+    text-decoration: none;
+    transition: background var(--pp-dur) var(--pp-ease);
+}
+.pp-nav-back__link:hover { background: rgba(45,107,74,0.07); }
+.pp-nav-back__link .material-symbols-outlined { font-size: 22px; }
+.pp-nav-back__title {
+    font-family: var(--pp-font-display);
+    font-size: 1.1rem;
+    color: var(--pp-ink);
+}
+
+/* ---------------------------------------------------------------------------
+ * .pp-soil-btn — three-choice soil-feeling buttons used on the Today list
+ * to log watering WITH feedback. Each button submits the same form with a
+ * different soil_feeling value so POST handlers get a single request. They
+ * are intentionally small — this is a row-level control, not a CTA.
+ * --------------------------------------------------------------------------*/
+.pp-soil-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 32px;
+    padding: 0 10px;
+    border-radius: var(--pp-radius-pill);
+    background: transparent;
+    border: 1px solid var(--pp-line);
+    color: var(--pp-ink-muted);
+    font: 600 0.72rem/1 var(--pp-font-body);
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: background var(--pp-dur) var(--pp-ease),
+                color var(--pp-dur) var(--pp-ease),
+                border-color var(--pp-dur) var(--pp-ease);
+}
+.pp-soil-btn:hover { color: var(--pp-ink); border-color: var(--pp-ink-muted); }
+.pp-soil-btn:focus-visible {
+    outline: 2px solid var(--pp-primary);
+    outline-offset: 2px;
+}
+.pp-soil-btn--dry:hover { background: #f6e4d4; color: #5a331a; border-color: #b8734a; }
+.pp-soil-btn--ok:hover  { background: var(--pp-primary-soft); color: #0f3a23; border-color: var(--pp-primary); }
+.pp-soil-btn--wet:hover { background: #d9e7f3; color: #1e3a52; border-color: #5a7894; }
+
+/* ===========================================================================
+ * pp-* design system — Wave 2 additions.
+ *
+ * New primitives layered on top of the buttons / nav work:
+ *
+ *   .pp-card         — surface container for plant/action rows + tiles
+ *   .pp-card--link   — same but keyboard-focusable as a whole
+ *   .pp-chip         — small status pill (confidence, reason codes)
+ *   .pp-empty        — empty-state block (consistent across pages)
+ *   .pp-page-header  — big page title + subtitle + optional actions
+ *   .pp-section-header — smaller section label used inside pages
+ *   .pp-stat         — big-number key/value for the detail page
+ *   .pp-kv           — definition-list-like two-column rows
+ *   .pp-callout      — cozy inline explanation box (Why?)
+ *
+ * Everything uses the existing tokens — no new palette entries. Keep it
+ * additive so page-specific CSS overrides still win where they need to.
+ * =========================================================================*/
+
+/* --- Cards --------------------------------------------------------------- */
+
+.pp-card {
+    background: var(--surface-container-lowest);
+    border: 1px solid var(--pp-line);
+    border-radius: 18px;
+    padding: 1rem 1.1rem;
+    box-shadow: var(--shadow-ambient);
+    transition: transform var(--pp-dur) var(--pp-ease),
+                box-shadow var(--pp-dur) var(--pp-ease),
+                border-color var(--pp-dur) var(--pp-ease);
+}
+.pp-card--tight { padding: 0.75rem 0.85rem; }
+.pp-card--flat  { box-shadow: none; }
+
+/* Block-level link cards: the entire card is clickable. Wrap in <a>. */
+.pp-card-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+}
+.pp-card-link:hover .pp-card,
+.pp-card-link:focus-visible .pp-card {
+    transform: translateY(-1px);
+    box-shadow: var(--pp-shadow-btn-hi);
+    border-color: rgba(45,107,74,0.25);
+}
+.pp-card-link:focus-visible {
+    outline: 2px solid var(--pp-primary);
+    outline-offset: 3px;
+    border-radius: 20px;
+}
+
+/* --- Chips / pills ------------------------------------------------------- */
+
+.pp-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.18rem 0.6rem;
+    border-radius: var(--pp-radius-pill);
+    background: var(--surface-container);
+    color: var(--pp-ink-muted);
+    font: 600 0.72rem/1.5 var(--pp-font-body);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+/* Confidence variants map 1:1 to Confidence enum values. */
+.pp-chip--conf-low    { background: #f6e4d4; color: #5a331a; }
+.pp-chip--conf-medium { background: #f2ece0; color: #5e5130; }
+.pp-chip--conf-high   { background: var(--pp-primary-soft); color: #0f3a23; }
+/* History depth (observation count) — separate from model confidence */
+.pp-chip--hist-low    { background: #f3efe6; color: #5e5130; text-transform: none; font-weight: 600; }
+.pp-chip--hist-medium { background: #e8ecd9; color: #3e4a24; text-transform: none; font-weight: 600; }
+.pp-chip--hist-high   { background: var(--pp-primary-soft); color: #0f3a23; text-transform: none; font-weight: 600; }
+.pp-chip--good        { background: var(--pp-primary-soft); color: #0f3a23; }
+.pp-chip--warn        { background: #f6e4d4; color: #5a331a; }
+.pp-chip--neutral     { background: var(--surface-container); color: var(--pp-ink-muted); }
+.pp-chip--ghost       { background: transparent; border-color: var(--pp-line); }
+.pp-chip .material-symbols-outlined { font-size: 14px; }
+
+/* Today row: “Why?” disclosure — larger tap target, still subtle (kiosk) */
+.pp-why-disclosure > summary {
+  list-style: none;
+  padding: 0.4rem 0.45rem;
+  margin: 0 -0.45rem;
+  border-radius: 10px;
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
+  -webkit-tap-highlight-color: rgba(45, 107, 74, 0.12);
+}
+.pp-why-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+.pp-why-disclosure > summary::marker {
+  content: "";
+}
+.pp-why-disclosure > summary:hover {
+  background: rgba(45, 107, 74, 0.05);
+}
+
+/* --- Page headers -------------------------------------------------------- */
+
+.pp-page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin: 0.25rem 0 1.25rem;
+}
+.pp-page-header__title {
+    font-family: var(--pp-font-display);
+    font-size: clamp(1.6rem, 5vw, 2.1rem);
+    color: var(--pp-ink);
+    margin: 0;
+    line-height: 1.15;
+}
+.pp-page-header__subtitle {
+    color: var(--pp-ink-muted);
+    font-size: 0.95rem;
+    margin: 0.25rem 0 0;
+}
+.pp-page-header__actions { display: inline-flex; gap: 0.5rem; }
+
+.pp-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin: 1.75rem 0 0.75rem;
+}
+.pp-section-header h2,
+.pp-section-header__title {
+    font-family: var(--pp-font-display);
+    font-size: 1.15rem;
+    color: var(--pp-ink);
+    margin: 0;
+}
+.pp-section-header__meta {
+    color: var(--pp-ink-muted);
+    font-size: 0.85rem;
+}
+
+/* --- Empty states -------------------------------------------------------- */
+
+.pp-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.65rem;
+    padding: 2rem 1rem;
+    border: 1px dashed var(--pp-line);
+    border-radius: 20px;
+    background: var(--surface-container-low);
+    color: var(--pp-ink-muted);
+}
+.pp-empty__icon .material-symbols-outlined {
+    font-size: 40px;
+    color: var(--pp-primary);
+    opacity: 0.75;
+}
+.pp-empty__title {
+    font-family: var(--pp-font-display);
+    font-size: 1.1rem;
+    color: var(--pp-ink);
+    margin: 0;
+}
+.pp-empty__body { margin: 0; max-width: 28rem; }
+
+/* --- Stats (detail page) ------------------------------------------------- */
+
+.pp-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.75rem 1rem;
+    border-radius: 14px;
+    background: var(--surface-container-low);
+}
+.pp-stat__label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--pp-ink-muted);
+}
+.pp-stat__value {
+    font-family: var(--pp-font-display);
+    font-size: 1.4rem;
+    color: var(--pp-ink);
+    line-height: 1.1;
+}
+
+/* --- Key/Value rows ------------------------------------------------------ */
+
+.pp-kv {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.35rem 0.85rem;
+    margin: 0;
+    font-size: 0.92rem;
+}
+.pp-kv dt { color: var(--pp-ink-muted); font-weight: 600; }
+.pp-kv dd { margin: 0; color: var(--pp-ink); }
+
+/* --- Callout (cozy explanation) ----------------------------------------- */
+
+.pp-callout {
+    border-left: 3px solid var(--pp-primary);
+    background: var(--pp-primary-soft);
+    color: #0f3a23;
+    padding: 0.85rem 1rem;
+    border-radius: 0 14px 14px 0;
+    font-size: 0.92rem;
+}
+.pp-callout ul { margin: 0.35rem 0 0 1.1rem; padding: 0; }
+.pp-callout li { margin: 0.15rem 0; }
+.pp-callout--neutral {
+    border-left-color: var(--pp-ink-muted);
+    background: var(--surface-container-low);
+    color: var(--pp-ink);
+}
+
+/* --- Card layout parts used by the home "All plants" grid + detail page -- */
+
+/* Link-card alias. Some templates predate pp-card-link; both work. */
+.pp-card--link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    background: var(--surface-container-lowest);
+    border: 1px solid var(--pp-line);
+    border-radius: 18px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: var(--shadow-ambient);
+    transition: transform var(--pp-dur) var(--pp-ease),
+                box-shadow var(--pp-dur) var(--pp-ease),
+                border-color var(--pp-dur) var(--pp-ease);
+}
+.pp-card--link:hover,
+.pp-card--link:focus-visible {
+    transform: translateY(-1px);
+    box-shadow: var(--pp-shadow-btn-hi);
+    border-color: rgba(45,107,74,0.25);
+}
+.pp-card--link:focus-visible {
+    outline: 2px solid var(--pp-primary);
+    outline-offset: 3px;
+}
+
+.pp-card__media {
+    aspect-ratio: 4 / 5;
+    background: var(--surface-container);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+.pp-card__media > * { max-width: 70%; max-height: 70%; }
+.pp-card__body { padding: 0.85rem 1rem 1rem; display: flex; flex-direction: column; gap: 0.25rem; }
+.pp-card__eyebrow {
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--pp-ink-muted);
+    font-weight: 700;
+}
+.pp-card__title {
+    font-family: var(--pp-font-display);
+    font-size: 1.35rem;
+    color: var(--pp-ink);
+    line-height: 1.1;
+}
+/* Care template / archetype line — secondary to nickname + place */
+.pp-card__type {
+    font-size: 0.78rem;
+    color: var(--pp-ink-muted);
+    line-height: 1.25;
+    margin: 0;
+}
+.pp-card__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 0.35rem;
+}
+.pp-card__streak {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--pp-ink-muted);
+}
+
+/* Status chip variants for plant due-date tone. Kept separate from
+   confidence variants so the semantics stay unambiguous. */
+.pp-chip--status-urgent     { background: #f1dada; color: #6a2323; }
+.pp-chip--status-primary    { background: var(--pp-primary-soft); color: #0f3a23; }
+.pp-chip--status-secondary  { background: #e8ecd9; color: #3e4a24; }
+.pp-chip--status-muted      { background: var(--surface-container); color: var(--pp-ink-muted); }
+
+/* --- Event/history timeline (detail page) ------------------------------- */
+
+.pp-timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.pp-timeline__item {
+    display: grid;
+    grid-template-columns: 6.5rem 1fr;
+    gap: 0.75rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: 12px;
+    background: var(--surface-container-low);
+    font-size: 0.9rem;
+}
+.pp-timeline__when { color: var(--pp-ink-muted); font-variant-numeric: tabular-nums; }
+.pp-timeline__what { color: var(--pp-ink); }
