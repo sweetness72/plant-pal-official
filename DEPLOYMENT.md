@@ -43,6 +43,17 @@ docker compose logs -f
 - App listens on **port 8000** (mapped to host `8000`). Open `http://<pi-ip>:8000` from a browser on the LAN (or the kiosk).
 - **Health:** `http://<pi-ip>:8000/healthz` (image `HEALTHCHECK` in `Dockerfile` applies under Compose too; see `compose.yaml` comments).
 
+## Using a published image (Docker Hub)
+
+For hosts that only **pull** an image (no `git clone`, no `docker compose build`):
+
+- Use `compose.hub.example.yaml` as a template: set `image: docker.io/<your-username>/plant-pal:<tag>`, and **do not** add a `build:` key.
+- Run: `docker compose pull` and `docker compose up -d` (same data rules as the table below).
+
+Full tagging and multi-arch publishing steps: **`RELEASE.md` → "Docker Hub"**. That path produces **amd64 + arm64** so the same tag runs on a PC and a 64-bit Raspberry Pi.
+
+**Repo `compose.yaml`** (with `build: .`) stays the default for **cloning this repository** and building locally; it is not required on a machine that only pulls.
+
 ## Start / stop / update — which commands keep data
 
 **Your SQLite and uploads live in a Docker named volume** (`plantpal_data` in `compose.yaml`; the *full* volume name on disk is **Compose-prefixed** — see `BACKUPS.md`).

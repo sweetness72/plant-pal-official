@@ -1,0 +1,27 @@
+# Plant Pal — pull-only Compose (Docker Hub or any registry)
+#
+# For machines that run a **published** image and do not build from source.
+# 1. Copy this file to compose.yaml (or use: docker compose -f compose.hub.example.yaml up -d)
+# 2. Replace YOUR_DOCKERHUB_USER with your Docker Hub username
+# 3. Bump the tag (e.g. 1.0.0) when you publish a new image
+#
+# There is no `build:` key — only `docker compose pull` + `up`.
+#
+# See RELEASE.md → "Docker Hub" for how to publish multi-arch images.
+
+services:
+  plant-pal:
+    image: docker.io/YOUR_DOCKERHUB_USER/plant-pal:1.0.0
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      PLANTPAL_HOST: "0.0.0.0"
+      PLANTPAL_PORT: "8000"
+      # Optional: set on the Pi (comma-separated; see app/security.py)
+      # PLANTPAL_ALLOWED_HOSTS: "plantpal.local,127.0.0.1"
+    volumes:
+      - plantpal_data:/app/data
+
+volumes:
+  plantpal_data:

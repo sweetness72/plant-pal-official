@@ -1,4 +1,8 @@
-# Plant Pal — production-style Compose
+# Plant Pal — production-style Compose (build from this repo)
+#
+# If you only **pull** a published image (e.g. from Docker Hub) and have no
+# source checkout, use `compose.hub.example.yaml` instead (no `build:` key).
+# See RELEASE.md → "Docker Hub".
 #
 # Build a versioned image (do not rely on :latest for production):
 #   docker compose build

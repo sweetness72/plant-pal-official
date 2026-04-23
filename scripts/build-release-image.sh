@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Build a version-tagged image matching compose.yaml (default plant-pal:1.0.0).
+# Local single-platform `docker build` — fast smoke test; same arch as the host.
+# For publishing **multi-arch** (amd64+arm64) to Docker Hub, use scripts/docker-buildx-push.sh.
 # Usage: from repo root, ./scripts/build-release-image.sh [tag]
 # Example: ./scripts/build-release-image.sh 1.0.1
 set -euo pipefail
